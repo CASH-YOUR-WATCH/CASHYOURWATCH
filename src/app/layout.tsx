@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
-import { CursorTrail } from "@/components/cursor-trail";
+// import { CursorTrail } from "@/components/cursor-trail"; // desactivado temporalmente (rastro de partículas)
 
 /* --- Tipografía ---------------------------------------------------------
    Qlassy (display) y Houstiq (acento) son fuentes comerciales que el cliente
@@ -47,7 +47,7 @@ export default function RootLayout({
       className={`${montserrat.variable} ${cormorant.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <CursorTrail />
+        {/* <CursorTrail /> — rastro de partículas, desactivado por ahora */}
         {children}
       </body>
     </html>
