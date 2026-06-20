@@ -34,10 +34,6 @@ export function LegalPage({
           </p>
         )}
 
-        <p className="mt-8 border border-cyw-white/10 bg-cyw-white/[0.02] px-4 py-3 text-xs leading-relaxed text-cyw-white/45">
-          Borrador. El texto definitivo será validado por el área legal.
-        </p>
-
         <div className="mt-10 space-y-8">{children}</div>
       </div>
 
