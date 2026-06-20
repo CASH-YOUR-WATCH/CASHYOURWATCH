@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { logout } from "@/lib/auth/actions";
 
 type Tab = { href: string; label: string; icon: "solicitudes" | "perfil" };
@@ -30,9 +31,22 @@ function Icono({ name }: { name: keyof typeof ICONS }) {
   );
 }
 
-/** Barra de pestañas inferior estilo app (solo móvil). */
+const tabBase =
+  "flex flex-col items-center gap-1.5 py-3 text-[9px] uppercase tracking-[0.15em] transition-[color,transform] duration-150 active:scale-90";
+
+/** Barra de pestañas inferior estilo app (solo móvil), con feedback instantáneo. */
 export function MobileTabs({ tabs }: { tabs: Tab[] }) {
   const pathname = usePathname();
+  // Resalte optimista: al tocar, marca de inmediato sin esperar la navegación.
+  const [pending, setPending] = useState<string | null>(null);
+  useEffect(() => {
+    setPending(null);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    pending
+      ? pending === href
+      : pathname === href || pathname.startsWith(href + "/");
 
   return (
     <nav
@@ -42,26 +56,20 @@ export function MobileTabs({ tabs }: { tabs: Tab[] }) {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {tabs.map((t) => {
-        const active = pathname === t.href || pathname.startsWith(t.href + "/");
-        return (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`flex flex-col items-center gap-1.5 py-3 text-[9px] uppercase tracking-[0.15em] transition-colors ${
-              active ? "text-cyw-white" : "text-cyw-white/45"
-            }`}
-          >
-            <Icono name={t.icon} />
-            {t.label}
-          </Link>
-        );
-      })}
-      <form action={logout} className="contents">
-        <button
-          type="submit"
-          className="flex flex-col items-center gap-1.5 py-3 text-[9px] uppercase tracking-[0.15em] text-cyw-white/45"
+      {tabs.map((t) => (
+        <Link
+          key={t.href}
+          href={t.href}
+          prefetch
+          onClick={() => setPending(t.href)}
+          className={`${tabBase} ${isActive(t.href) ? "text-cyw-white" : "text-cyw-white/45"}`}
         >
+          <Icono name={t.icon} />
+          {t.label}
+        </Link>
+      ))}
+      <form action={logout} className="contents">
+        <button type="submit" className={`${tabBase} text-cyw-white/45`}>
           <Icono name="salir" />
           Salir
         </button>

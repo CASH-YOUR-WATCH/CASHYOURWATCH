@@ -2,12 +2,28 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { MobileTabs } from "@/components/app/mobile-tabs";
+import { createClient } from "@/lib/supabase/server";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // El destino de "Solicitudes" depende del rol: admin gestiona; usuario ve las suyas.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let solicitudesHref = "/panel";
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profile?.role === "admin") solicitudesHref = "/admin";
+  }
+
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
       {/* Header desktop */}
@@ -17,7 +33,7 @@ export default function AppLayout({
         </Link>
         <nav className="flex items-center gap-7">
           <Link
-            href="/panel"
+            href={solicitudesHref}
             className="text-xs uppercase tracking-[0.15em] text-cyw-white/60 transition-colors hover:text-cyw-white"
           >
             Solicitudes
@@ -48,7 +64,7 @@ export default function AppLayout({
 
       <MobileTabs
         tabs={[
-          { href: "/panel", label: "Solicitudes", icon: "solicitudes" },
+          { href: solicitudesHref, label: "Solicitudes", icon: "solicitudes" },
           { href: "/perfil", label: "Perfil", icon: "perfil" },
         ]}
       />

@@ -21,7 +21,7 @@ export function Hero() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-cyw-black via-cyw-black/55 to-cyw-black/25" />
-        <Particles className="opacity-60" />
+        <Particles className="opacity-100" />
       </div>
 
       <Container className="relative pb-24 pt-40">

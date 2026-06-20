@@ -1,12 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Container, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
+import { CoverFlow } from "./cover-flow";
+
+const RELOJES = [1, 2, 3, 4, 5].map((n) => ({
+  src: `/images/reloj-${n}.png`,
+  alt: `Reloj de lujo ${n}`,
+}));
 
 export function SectionSeguridad() {
   return (
-    <section className="border-t border-cyw-white/10 py-24 sm:py-32">
+    <section className="overflow-hidden border-t border-cyw-white/10 py-24 sm:py-32">
       <Container>
         <Reveal className="text-center">
           <SectionTitle align="center">Seguridad y autenticación</SectionTitle>
@@ -16,24 +21,12 @@ export function SectionSeguridad() {
           </p>
         </Reveal>
 
-        {/* Fila pareja de 5 relojes (como el mockup). */}
-        <div className="mt-16 grid grid-cols-2 gap-5 sm:grid-cols-5 sm:gap-6">
-          {[1, 2, 3, 4, 5].map((n, i) => (
-            <Reveal key={n} delay={i * 0.08}>
-              <div className="relative aspect-[3/4] w-full">
-                <Image
-                  src={`/images/reloj-${n}.png`}
-                  alt={`Reloj de lujo ${n}`}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 20vw"
-                  className="object-contain"
-                />
-              </div>
-            </Reveal>
-          ))}
-        </div>
+        {/* Galería 3D estilo Cover Flow (arrastra o usa las flechas). */}
+        <Reveal className="mt-12">
+          <CoverFlow images={RELOJES} />
+        </Reveal>
 
-        <Reveal className="mt-14 text-center">
+        <Reveal className="mt-10 text-center">
           <Link href="/registro">
             <Button variant="outline">Ver más</Button>
           </Link>
