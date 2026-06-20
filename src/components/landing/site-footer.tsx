@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 
 const ENLACES = [
-  { href: "#quienes-somos", label: "¿Quiénes somos?" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#contacto", label: "Contacto" },
   { href: "/registro", label: "Solicitar evaluación" },
+  { href: "#contacto", label: "Contacto" },
+  { href: "#faq", label: "FAQ" },
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#quienes-somos", label: "¿Quiénes somos?" },
 ];
 
 const LEGAL = [
@@ -36,14 +36,7 @@ function IconLinkedin(props: React.SVGProps<SVGSVGElement>) {
 
 export function SiteFooter() {
   return (
-    <footer id="contacto" className="relative overflow-hidden bg-cyw-gray text-cyw-white">
-      {/* Wordmark gigante (firma de marca) */}
-      <div className="overflow-hidden border-b border-cyw-white/10 py-8 sm:py-12">
-        <p className="wordmark-outline select-none whitespace-nowrap text-center font-serif text-[19vw] leading-none lg:text-[13vw]">
-          CASH YOUR WATCH
-        </p>
-      </div>
-
+    <footer id="contacto" className="bg-cyw-gray text-cyw-white">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 sm:px-10 lg:grid-cols-4">
         <div className="lg:col-span-1">
           <Logo />

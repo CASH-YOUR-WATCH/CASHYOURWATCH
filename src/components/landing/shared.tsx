@@ -14,23 +14,42 @@ export function Container({
   );
 }
 
-export function Eyebrow({
-  className = "",
+/**
+ * Título de sección al estilo del mockup: serif en MAYÚSCULAS con un subrayado
+ * corto debajo. Ej: "¿QUIÉNES SOMOS?" ──
+ */
+export function SectionTitle({
   children,
+  tone = "dark",
+  align = "left",
+  className = "",
 }: {
-  className?: string;
   children: ReactNode;
+  tone?: "dark" | "light";
+  align?: "left" | "center";
+  className?: string;
 }) {
+  const isDark = tone === "dark";
+  const color = isDark ? "text-cyw-white" : "text-cyw-black";
+  const rule = isDark ? "bg-cyw-white/40" : "bg-cyw-black/40";
+
   return (
-    <p className={`text-[11px] uppercase tracking-[0.3em] ${className}`}>
-      {children}
-    </p>
+    <div className={`${align === "center" ? "text-center" : ""} ${className}`}>
+      <h2
+        className={`font-serif text-2xl uppercase leading-tight tracking-[0.08em] sm:text-3xl ${color}`}
+      >
+        {children}
+      </h2>
+      <span
+        className={`mt-4 block h-px w-14 ${rule} ${align === "center" ? "mx-auto" : ""}`}
+      />
+    </div>
   );
 }
 
 /**
- * Marco de imagen elegante con el monograma CYW de fondo. Placeholder hasta que
- * el cliente entregue la fotografía real; basta con reemplazarlo por <Image>.
+ * Marco de imagen elegante con el monograma CYW. Placeholder hasta que el
+ * cliente entregue la fotografía real; basta reemplazarlo por <Image>.
  */
 export function ImagePlaceholder({
   label,
@@ -55,7 +74,7 @@ export function ImagePlaceholder({
       />
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className={`font-serif text-6xl ${isDark ? "text-cyw-white/[0.08]" : "text-cyw-black/[0.07]"}`}
+          className={`font-serif text-5xl ${isDark ? "text-cyw-white/[0.08]" : "text-cyw-black/[0.07]"}`}
         >
           CYW
         </span>

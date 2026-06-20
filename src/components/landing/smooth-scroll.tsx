@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import Lenis from "lenis";
 
 /**
- * Scroll suave (lenis) + barra de progreso de scroll arriba.
- * También intercepta los enlaces de ancla para hacer scroll suave con offset
- * del header fijo. Respeta prefers-reduced-motion.
+ * Scroll suave (lenis) + scroll suave en los enlaces de ancla con offset del
+ * header fijo. Respeta prefers-reduced-motion. No renderiza nada visible.
  */
 export function SmoothScroll() {
-  const barRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -26,12 +23,6 @@ export function SmoothScroll() {
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-
-    lenis.on("scroll", (e: { progress: number }) => {
-      if (barRef.current) {
-        barRef.current.style.transform = `scaleX(${e.progress})`;
-      }
-    });
 
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
@@ -54,12 +45,5 @@ export function SmoothScroll() {
     };
   }, []);
 
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-px bg-cyw-white/10">
-      <div
-        ref={barRef}
-        className="h-full origin-left scale-x-0 bg-cyw-white/70"
-      />
-    </div>
-  );
+  return null;
 }

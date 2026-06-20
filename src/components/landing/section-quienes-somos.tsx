@@ -1,50 +1,34 @@
-import { Container, ImagePlaceholder } from "./shared";
-import { SectionHeader } from "./section-header";
+import { Container, ImagePlaceholder, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
 
 export function SectionQuienesSomos() {
   return (
-    <section
-      id="quienes-somos"
-      className="border-t border-cyw-white/10 py-28 sm:py-40"
-    >
-      <Container>
+    <section id="quienes-somos" className="py-24 sm:py-32">
+      <Container className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
         <Reveal>
-          <SectionHeader
-            index="01"
-            eyebrow="¿Quiénes somos?"
-            title={
-              <>
-                Convertimos{" "}
-                <span className="font-light italic text-cyw-white/70">
-                  patrimonio
-                </span>{" "}
-                en acceso.
-              </>
-            }
-          />
+          <SectionTitle>¿Quiénes somos?</SectionTitle>
+          <div className="mt-8 max-w-xl space-y-5 leading-relaxed text-cyw-white/60">
+            <p>
+              <span className="font-medium text-cyw-white/90">
+                Cash Your Watch
+              </span>{" "}
+              es una plataforma especializada en financiamiento respaldado por
+              relojería y activos de lujo, creada para ofrecer acceso rápido,
+              seguro y profesional a capital inmediato.
+            </p>
+            <p>
+              En Cash Your Watch, convertimos patrimonio en acceso, confianza en
+              respaldo y valor en oportunidades.
+            </p>
+          </div>
         </Reveal>
 
-        <div className="mt-16 grid gap-14 lg:grid-cols-12 lg:items-end lg:gap-20">
-          <Reveal className="lg:col-span-7" delay={0.1}>
-            <p className="font-serif text-2xl leading-snug text-cyw-white/80 sm:text-3xl">
-              Una plataforma especializada en financiamiento respaldado por
-              relojería y activos de lujo.
-            </p>
-            <p className="mt-7 max-w-xl leading-relaxed text-cyw-white/55">
-              Creada para ofrecer acceso rápido, seguro y profesional a capital
-              inmediato. Convertimos patrimonio en acceso, confianza en respaldo
-              y valor en oportunidades.
-            </p>
-          </Reveal>
-
-          <Reveal className="lg:col-span-5" delay={0.2}>
-            <ImagePlaceholder
-              label="Relojería de lujo"
-              className="aspect-[3/4] w-full"
-            />
-          </Reveal>
-        </div>
+        <Reveal delay={0.15}>
+          <ImagePlaceholder
+            label="Reloj de lujo / caja CYW"
+            className="aspect-[4/3] w-full"
+          />
+        </Reveal>
       </Container>
     </section>
   );

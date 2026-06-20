@@ -6,19 +6,17 @@
    - Blanco  #FFFFFF  (claridad)
    - Gris    #3C3C3B  (estructura / estabilidad)
    - Negro   #0B0F14  (autoridad / fondo principal)
+   - Crema   tono claro cálido usado en las secciones claras del mockup
    =========================================================================== */
 
 @theme {
   --color-cyw-white: #ffffff;
   --color-cyw-gray: #3c3c3b;
   --color-cyw-black: #0b0f14;
+  --color-cyw-cream: #ece9e2;
 }
 
-/* Mapea las utilidades de fuente de Tailwind a las fuentes cargadas por
-   next/font (ver layout.tsx). `inline` hace que `font-sans` / `font-serif`
-   usen el valor de la variable directamente.
-   - font-sans  → cuerpo (Montserrat; será Houstiq/Montserrat cuando lleguen)
-   - font-serif → display (Cormorant Garamond; será Qlassy cuando llegue) */
+/* font-sans → cuerpo (Montserrat) · font-serif → display (Cormorant/Qlassy) */
 @theme inline {
   --font-sans: var(--font-body);
   --font-serif: var(--font-display);
@@ -26,12 +24,10 @@
 
 :root {
   --background: var(--color-cyw-black);
-  --foreground: #f4f4f3; /* blanco suave para no fatigar sobre negro */
+  --foreground: #f4f4f3;
 }
 
 html {
-  /* Scroll suave para los enlaces de ancla del landing (#quienes-somos, etc).
-     Next 16 ya no sobrescribe scroll-behavior, así que esto manda. */
   scroll-behavior: smooth;
   scroll-padding-top: 5rem; /* compensa el header fijo */
 }
@@ -42,13 +38,13 @@ body {
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Fondo premium del hero: capas de gradiente que evocan la atmósfera oscura
-   y metálica del mockup. Es el placeholder hasta que llegue la capa 3D (Fase 11). */
+/* Fondo del hero: degradado oscuro monocromático (placeholder de la foto de
+   ciudad). Sin tintes de color — solo grises de marca. */
 .hero-bg {
   background:
-    radial-gradient(55% 45% at 72% 28%, rgba(125, 145, 175, 0.18), transparent 70%),
-    radial-gradient(45% 45% at 18% 75%, rgba(255, 255, 255, 0.05), transparent 72%),
-    radial-gradient(80% 80% at 50% 120%, rgba(0, 0, 0, 0.6), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 28%),
+    radial-gradient(75% 55% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(100% 100% at 50% 120%, rgba(0, 0, 0, 0.75), transparent 60%),
     var(--color-cyw-black);
 }
 
@@ -67,79 +63,8 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* === Grano de película (textura premium) ================================== */
-.grain-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 130px 130px;
-}
-
-/* === Anillo metálico giratorio (placeholder del reloj 3D) ================= */
-@keyframes cyw-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes cyw-spin-rev {
-  to {
-    transform: rotate(-360deg);
-  }
-}
-.cyw-ring {
-  border-radius: 9999px;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 255, 255, 0) 0deg,
-    rgba(255, 255, 255, 0.4) 55deg,
-    rgba(150, 170, 200, 0.04) 130deg,
-    rgba(255, 255, 255, 0.22) 215deg,
-    rgba(255, 255, 255, 0) 300deg,
-    rgba(255, 255, 255, 0) 360deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 1.5px),
-    #000 calc(100% - 1.5px)
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 1.5px),
-    #000 calc(100% - 1.5px)
-  );
-  animation: cyw-spin 28s linear infinite;
-}
-
-/* === Marquee de marcas ==================================================== */
-@keyframes cyw-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-.cyw-marquee {
-  animation: cyw-marquee 36s linear infinite;
-}
-
-/* === Wordmark contorneado (firma del footer) ============================== */
-.wordmark-outline {
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.14);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .cyw-ring,
-  .cyw-marquee {
-    animation: none;
-  }
   html {
     scroll-behavior: auto;
   }
 }
-

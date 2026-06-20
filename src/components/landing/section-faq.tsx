@@ -1,26 +1,18 @@
-import { Container } from "./shared";
-import { SectionHeader } from "./section-header";
+import { Container, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
 import { Faq } from "./faq";
 
 export function SectionFaq() {
   return (
-    <section id="faq" className="bg-cyw-white py-28 text-cyw-black sm:py-40">
-      <Container className="grid gap-14 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-4 lg:sticky lg:top-28 lg:self-start">
-          <Reveal>
-            <SectionHeader
-              index="05"
-              eyebrow="FAQ"
-              tone="light"
-              title="Preguntas frecuentes"
-            />
-            <p className="mt-7 max-w-xs text-sm leading-relaxed text-cyw-black/55">
-              Acompañamiento experto en cada etapa. Así protegemos, evaluamos y
-              convertimos tus activos en nuevas oportunidades.
-            </p>
-          </Reveal>
-        </div>
+    <section id="faq" className="bg-cyw-cream py-24 text-cyw-black sm:py-32">
+      <Container className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <Reveal className="lg:col-span-4">
+          <SectionTitle tone="light">FAQ</SectionTitle>
+          <p className="mt-8 max-w-xs font-serif text-sm uppercase leading-relaxed tracking-[0.05em] text-cyw-black/55">
+            Acompañamiento experto en cada etapa. Conoce cómo protegemos,
+            evaluamos y convertimos tus activos en nuevas oportunidades.
+          </p>
+        </Reveal>
 
         <div className="lg:col-span-7 lg:col-start-6">
           <Reveal delay={0.1}>

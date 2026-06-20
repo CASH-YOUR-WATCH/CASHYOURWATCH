@@ -25,25 +25,25 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <ul className="border-t border-cyw-black/10">
+    <ul className="border-t border-cyw-black/15">
       {FAQS.map((item, i) => {
         const isOpen = open === i;
         return (
-          <li key={item.q} className="border-b border-cyw-black/10">
+          <li key={item.q} className="border-b border-cyw-black/15">
             <button
               type="button"
               onClick={() => setOpen(isOpen ? null : i)}
-              className="flex w-full items-center gap-5 py-7 text-left"
+              className="flex w-full items-center gap-4 py-5 text-left"
               aria-expanded={isOpen}
             >
-              <span className="font-serif text-sm text-cyw-black/35">
+              <span className="font-serif text-xs text-cyw-black/40">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="flex-1 font-serif text-xl text-cyw-black sm:text-2xl">
+              <span className="flex-1 font-serif text-sm uppercase tracking-[0.06em] text-cyw-black sm:text-base">
                 {item.q}
               </span>
               <span
-                className={`text-2xl font-light text-cyw-black/50 transition-transform duration-300 ${
+                className={`text-lg font-light text-cyw-black/50 transition-transform duration-300 ${
                   isOpen ? "rotate-45" : ""
                 }`}
               >
@@ -52,10 +52,10 @@ export function Faq() {
             </button>
             <div
               className={`grid transition-all duration-500 ease-out ${
-                isOpen ? "grid-rows-[1fr] pb-7" : "grid-rows-[0fr]"
+                isOpen ? "grid-rows-[1fr] pb-5" : "grid-rows-[0fr]"
               }`}
             >
-              <p className="overflow-hidden pl-9 text-sm leading-relaxed text-cyw-black/60 sm:text-base">
+              <p className="overflow-hidden pl-8 text-sm leading-relaxed text-cyw-black/60">
                 {item.a}
               </p>
             </div>
