@@ -1,4 +1,4 @@
-import { Container, ImagePlaceholder, SectionTitle } from "./shared";
+import { Container, Photo, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
 
 const ITEMS: { title: string; body: string }[] = [
@@ -46,9 +46,11 @@ export function SectionDiferenciadores() {
         </Reveal>
 
         <Reveal className="lg:col-span-4" delay={0.2}>
-          <ImagePlaceholder
-            label="Reloj, pluma y documentos"
+          <Photo
+            src="/images/diferenciadores.png"
+            alt="Reloj, pluma y documentos"
             className="aspect-[3/4] w-full"
+            sizes="(max-width: 1024px) 100vw, 33vw"
           />
         </Reveal>
       </Container>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Container } from "./shared";
@@ -8,10 +9,17 @@ import { Container } from "./shared";
 export function Hero() {
   return (
     <section className="relative flex min-h-screen items-end overflow-hidden">
-      {/* Foto de fondo (placeholder de la fachada/ciudad del mockup). */}
+      {/* Foto de fondo (fachada/ciudad). */}
       <div aria-hidden className="absolute inset-0">
-        <div className="hero-bg absolute inset-0" />
-        <div className="absolute inset-0 bg-gradient-to-t from-cyw-black via-cyw-black/55 to-cyw-black/30" />
+        <Image
+          src="/images/hero.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-cyw-black via-cyw-black/55 to-cyw-black/25" />
       </div>
 
       <Container className="relative pb-24 pt-40">

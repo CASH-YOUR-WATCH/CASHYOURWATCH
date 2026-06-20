@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Container, ImagePlaceholder, SectionTitle } from "./shared";
+import { Container, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
 
 export function SectionSeguridad() {
@@ -17,9 +18,17 @@ export function SectionSeguridad() {
 
         {/* Fila pareja de 5 relojes (como el mockup). */}
         <div className="mt-16 grid grid-cols-2 gap-5 sm:grid-cols-5 sm:gap-6">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Reveal key={i} delay={i * 0.08}>
-              <ImagePlaceholder className="aspect-[3/4] w-full" />
+          {[1, 2, 3, 4, 5].map((n, i) => (
+            <Reveal key={n} delay={i * 0.08}>
+              <div className="relative aspect-[3/4] w-full">
+                <Image
+                  src={`/images/reloj-${n}.png`}
+                  alt={`Reloj de lujo ${n}`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 20vw"
+                  className="object-contain"
+                />
+              </div>
             </Reveal>
           ))}
         </div>

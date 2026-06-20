@@ -1,4 +1,4 @@
-import { Container, ImagePlaceholder, SectionTitle } from "./shared";
+import { Container, Photo, SectionTitle } from "./shared";
 import { Reveal } from "./reveal";
 
 export function SectionQuienesSomos() {
@@ -24,9 +24,11 @@ export function SectionQuienesSomos() {
         </Reveal>
 
         <Reveal delay={0.15}>
-          <ImagePlaceholder
-            label="Reloj de lujo / caja CYW"
+          <Photo
+            src="/images/quienes-somos.png"
+            alt="Reloj de lujo Cash Your Watch"
             className="aspect-[4/3] w-full"
+            sizes="(max-width: 1024px) 100vw, 50vw"
           />
         </Reveal>
       </Container>

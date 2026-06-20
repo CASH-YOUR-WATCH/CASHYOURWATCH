@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Container, ImagePlaceholder } from "./shared";
+import { Container, Photo } from "./shared";
 import { Reveal } from "./reveal";
 
 export function SectionCtaFinal() {
@@ -8,7 +8,12 @@ export function SectionCtaFinal() {
     <section className="border-t border-cyw-white/10 py-24 sm:py-32">
       <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <Reveal>
-          <ImagePlaceholder label="Caja CYW" className="aspect-[4/3] w-full" />
+          <Photo
+            src="/images/caja-reloj.png"
+            alt="Caja Cash Your Watch"
+            className="aspect-[4/3] w-full"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
         </Reveal>
 
         <Reveal delay={0.1}>
