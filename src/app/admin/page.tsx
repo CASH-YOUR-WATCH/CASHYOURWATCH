@@ -81,9 +81,37 @@ export default async function AdminListPage({
           No hay solicitudes que coincidan.
         </p>
       ) : (
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
+        <>
+          {/* Móvil: tarjetas (sin scroll horizontal) */}
+          <ul className="mt-8 space-y-3 lg:hidden">
+            {rows.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href={`/admin/${a.id}`}
+                  className="block border border-cyw-white/10 bg-cyw-white/[0.02] p-4 transition-colors active:border-cyw-white/30"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-serif text-base text-cyw-white">
+                      #{a.folio}
+                    </span>
+                    <StatusBadge status={a.status as ApplicationStatus} />
+                  </div>
+                  <p className="mt-1.5 text-sm text-cyw-white/70">
+                    {nameById.get(a.user_id) ?? "—"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-cyw-white/45">
+                    {a.marca} {a.modelo} · {formatMoney(a.monto_deseado)} ·{" "}
+                    {formatDateShort(a.created_at)}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop: tabla */}
+          <div className="mt-8 hidden overflow-x-auto lg:block">
+            <table className="w-full border-collapse text-sm">
+              <thead>
               <tr className="border-b border-cyw-white/10 text-left text-[10px] uppercase tracking-[0.2em] text-cyw-white/40">
                 <th className="py-3 pr-4 font-normal">Folio</th>
                 <th className="py-3 pr-4 font-normal">Solicitante</th>
@@ -126,7 +154,8 @@ export default async function AdminListPage({
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       <div className="mt-16">

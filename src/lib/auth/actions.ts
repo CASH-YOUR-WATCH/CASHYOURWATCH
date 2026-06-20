@@ -211,3 +211,55 @@ export async function updateProfile(
   revalidatePath("/perfil");
   return { ok: true, message: "Datos actualizados." };
 }
+
+// ---------------------------------------------------------------------------
+// Cambiar el correo de la cuenta (requiere confirmación por correo)
+// ---------------------------------------------------------------------------
+export async function updateEmail(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const email = String(formData.get("email") ?? "").trim();
+  if (!email) return { error: "Escribe el nuevo correo." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase.auth.updateUser({ email });
+  if (error) return { error: traducirError(error.message) };
+
+  return {
+    ok: true,
+    message:
+      "Enviamos un enlace de confirmación a tu correo actual y al nuevo. El cambio se aplica al confirmar ambos.",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Cambiar la contraseña de la cuenta (estando dentro)
+// ---------------------------------------------------------------------------
+export async function updateAccountPassword(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 6)
+    return { error: "La contraseña debe tener al menos 6 caracteres." };
+  if (password !== confirm) return { error: "Las contraseñas no coinciden." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: traducirError(error.message) };
+
+  return { ok: true, message: "Contraseña actualizada." };
+}

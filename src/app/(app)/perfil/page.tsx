@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PerfilForm } from "@/components/auth/perfil-form";
+import { AccountSecurity } from "@/components/auth/account-security";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/panel/status-badge";
 import { formatDateShort } from "@/lib/format";
@@ -159,6 +160,14 @@ export default async function PerfilPage() {
           nombre={profile?.nombre ?? ""}
           telefono={profile?.telefono ?? ""}
         />
+      </div>
+
+      {/* Seguridad de la cuenta */}
+      <div className="mt-12 border-t border-cyw-white/10 pt-10">
+        <h2 className="mb-6 text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
+          Seguridad de la cuenta
+        </h2>
+        <AccountSecurity email={user.email ?? ""} />
       </div>
     </div>
   );
