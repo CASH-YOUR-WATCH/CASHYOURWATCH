@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Container } from "./shared";
+import { Particles } from "./particles";
 
 export function Hero() {
   return (
@@ -20,6 +21,7 @@ export function Hero() {
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-cyw-black via-cyw-black/55 to-cyw-black/25" />
+        <Particles className="opacity-60" />
       </div>
 
       <Container className="relative pb-24 pt-40">

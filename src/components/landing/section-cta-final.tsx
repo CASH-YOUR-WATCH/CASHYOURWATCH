@@ -2,11 +2,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Container, Photo } from "./shared";
 import { Reveal } from "./reveal";
+import { Particles } from "./particles";
 
 export function SectionCtaFinal() {
   return (
-    <section className="border-t border-cyw-white/10 py-24 sm:py-32">
-      <Container className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+    <section className="relative overflow-hidden border-t border-cyw-white/10 py-24 sm:py-32">
+      <div aria-hidden className="absolute inset-0">
+        <Particles className="opacity-40" />
+        <div className="cyw-ring absolute right-[6%] top-1/2 hidden h-[24rem] w-[24rem] -translate-y-1/2 opacity-25 lg:block" />
+      </div>
+      <Container className="relative grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <Reveal>
           <Photo
             src="/images/caja-reloj.png"

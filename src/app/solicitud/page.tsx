@@ -21,19 +21,19 @@ export default async function SolicitudPage() {
     .single();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between border-b border-cyw-white/10 px-6 py-5 sm:px-10">
+    <div className="flex min-h-screen flex-col bg-cyw-cream text-cyw-black">
+      <header className="flex items-center justify-between border-b border-cyw-black/10 px-6 py-5 sm:px-10">
         <Link href="/">
-          <Logo className="origin-left scale-90" />
+          <Logo tone="dark" className="origin-left scale-90" />
         </Link>
         <Link
           href="/perfil"
-          className="text-xs uppercase tracking-[0.2em] text-cyw-white/50 transition-colors hover:text-cyw-white"
+          className="text-xs uppercase tracking-[0.2em] text-cyw-black/50 transition-colors hover:text-cyw-black"
         >
           Salir
         </Link>
       </header>
-      <main className="flex-1 px-6 py-12 sm:py-16">
+      <main className="flex flex-1 items-start justify-center px-4 py-10 sm:px-6 sm:py-14">
         <SolicitudWizard
           initialNombre={profile?.nombre ?? ""}
           initialTelefono={profile?.telefono ?? ""}

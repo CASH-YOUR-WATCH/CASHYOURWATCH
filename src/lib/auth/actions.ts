@@ -48,12 +48,27 @@ export async function login(
   if (!email || !password) return { error: "Completa todos los campos." };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
   if (error) return { error: traducirError(error.message) };
 
+  // Destino según el rol: admin → panel admin; usuario → su panel.
+  let destino = "/panel";
+  const uid = signInData.user?.id;
+  if (uid) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", uid)
+      .single();
+    if (profile?.role === "admin") destino = "/admin";
+  }
+
   revalidatePath("/", "layout");
-  redirect("/perfil");
+  redirect(destino);
 }
 
 // ---------------------------------------------------------------------------

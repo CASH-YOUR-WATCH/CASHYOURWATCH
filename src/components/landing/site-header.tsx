@@ -32,6 +32,12 @@ export function SiteHeader() {
               {n.label}
             </a>
           ))}
+          <Link
+            href="/login"
+            className="text-xs uppercase tracking-[0.15em] text-cyw-white/60 transition-colors hover:text-cyw-white"
+          >
+            Iniciar sesión
+          </Link>
           <Link href="/registro">
             <Button variant="outline" size="sm">
               Solicitar evaluación
@@ -62,6 +68,13 @@ export function SiteHeader() {
               {n.label}
             </a>
           ))}
+          <a
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="block text-sm uppercase tracking-[0.15em] text-cyw-white/70"
+          >
+            Iniciar sesión
+          </a>
           <Link href="/registro" onClick={() => setOpen(false)} className="block pt-2">
             <Button className="w-full">Solicitar evaluación</Button>
           </Link>

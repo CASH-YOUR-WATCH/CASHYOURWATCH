@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import imageCompression from "browser-image-compression";
 import { createClient } from "@/lib/supabase/client";
@@ -16,10 +17,6 @@ import {
   type WatchCondition,
   type FileType,
 } from "@/lib/applications";
-import { Input } from "@/components/ui/input";
-import { Field } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
-import { Alert } from "@/components/ui/alert";
 import { FileField, Thumb } from "./file-field";
 
 const TOTAL = 5;
@@ -29,6 +26,13 @@ const STEP_TITLES = [
   "Fotografías",
   "Documentos",
   "Confirmación",
+];
+const STEP_IMAGES = [
+  "/images/cliente.png",
+  "/images/quienes-somos.png",
+  "/images/reloj-2.png",
+  "/images/contrato.png",
+  "/images/finanzas.png",
 ];
 
 const CONDITION_DESC: Record<WatchCondition, string> = {
@@ -40,6 +44,31 @@ const CONDITION_DESC: Record<WatchCondition, string> = {
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const DOC_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
 const MAX_FILE_MB = 10;
+
+const inputCls =
+  "w-full rounded-md border border-cyw-black/15 bg-white px-4 py-3 text-sm text-cyw-black placeholder:text-cyw-black/30 focus:border-cyw-black/50 focus:outline-none";
+
+function LField({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor={htmlFor}
+        className="block text-[11px] uppercase tracking-[0.2em] text-cyw-black/50"
+      >
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 export function SolicitudWizard({
   initialNombre,
@@ -150,7 +179,6 @@ export function SolicitudWizard({
         if (rowErr) throw rowErr;
       }
 
-      // Dispara correos (usuario + admin) en el servidor. Best-effort.
       void notifyApplicationSubmitted(app.id);
       setFolio(app.folio);
     } catch {
@@ -162,117 +190,94 @@ export function SolicitudWizard({
     }
   }
 
-  // --- Pantalla de éxito ----------------------------------------------------
+  // --- Pantalla de éxito (tema claro) ---------------------------------------
   if (folio) {
     return (
-      <section className="relative overflow-hidden py-16">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="cyw-ring absolute left-1/2 top-1/2 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 opacity-40" />
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mx-auto max-w-md text-center"
+      <div className="mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-cyw-black/10 bg-white p-10 text-center shadow-sm">
+        <p className="text-[11px] uppercase tracking-[0.35em] text-cyw-black/40">
+          Solicitud enviada
+        </p>
+        <h1 className="mt-5 font-serif text-3xl text-cyw-black">
+          Recibimos tu solicitud
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-cyw-black/60">
+          Tu folio es{" "}
+          <span className="font-serif text-lg text-cyw-black">#{folio}</span>.
+          Nuestro equipo revisará la información y te contactará pronto.
+        </p>
+        <Link
+          href="/panel"
+          className="mt-8 inline-block bg-cyw-black px-6 py-3 text-xs uppercase tracking-[0.2em] text-cyw-white transition-colors hover:bg-cyw-black/90"
         >
-          <p className="text-[11px] uppercase tracking-[0.35em] text-cyw-white/40">
-            Solicitud enviada
-          </p>
-          <h1 className="mt-6 font-serif text-4xl leading-tight text-cyw-white">
-            Recibimos tu solicitud
-          </h1>
-          <p className="mt-5 text-sm leading-relaxed text-cyw-white/60">
-            Tu folio es{" "}
-            <span className="font-serif text-lg text-cyw-white">#{folio}</span>.
-            Nuestro equipo revisará la información y te contactará pronto. Podrás
-            dar seguimiento al estado desde tu cuenta.
-          </p>
-          <Link href="/panel" className="mt-10 inline-block">
-            <Button>Ver mis solicitudes</Button>
-          </Link>
-        </motion.div>
-      </section>
+          Ver mis solicitudes
+        </Link>
+      </div>
     );
   }
 
   // --- Wizard ---------------------------------------------------------------
   return (
-    <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[260px_1fr] lg:gap-20">
-      {/* Stepper (desktop) */}
-      <aside className="hidden lg:block">
-        <div className="lg:sticky lg:top-28">
-          <p className="mb-8 text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
-            Tu solicitud
-          </p>
-          <ol>
-            {STEP_TITLES.map((t, i) => {
-              const n = i + 1;
-              const active = n === step;
-              const done = n < step;
-              return (
-                <li key={t} className="flex items-center gap-4 py-2.5">
-                  <span
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border text-[11px] transition-colors ${
-                      active
-                        ? "border-cyw-white bg-cyw-white text-cyw-black"
-                        : done
-                          ? "border-cyw-white/40 text-cyw-white/70"
-                          : "border-cyw-white/15 text-cyw-white/30"
-                    }`}
-                  >
-                    {done ? "✓" : String(n).padStart(2, "0")}
-                  </span>
-                  <span
-                    className={`text-xs uppercase tracking-[0.15em] transition-colors ${
-                      active
-                        ? "text-cyw-white"
-                        : done
-                          ? "text-cyw-white/60"
-                          : "text-cyw-white/30"
-                    }`}
-                  >
-                    {t}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
+    <div className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-2xl border border-cyw-black/10 bg-white shadow-sm lg:grid-cols-[5fr_7fr]">
+      {/* Panel de imagen (desktop) */}
+      <aside className="relative hidden min-h-[660px] lg:block">
+        {STEP_IMAGES.map((src, i) => (
+          <Image
+            key={src}
+            src={src}
+            alt=""
+            fill
+            sizes="40vw"
+            className={`object-cover transition-opacity duration-700 ${
+              i === step - 1 ? "opacity-100" : "opacity-0"
+            }`}
+            priority={i === 0}
+          />
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-cyw-black/90 via-cyw-black/40 to-cyw-black/10" />
+        <div className="absolute inset-0 flex flex-col justify-between p-9 text-cyw-white">
+          <span className="text-[11px] uppercase tracking-[0.3em] text-cyw-white/70">
+            Solicitud de evaluación
+          </span>
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-cyw-white/60">
+              Paso {step} de {TOTAL}
+            </p>
+            <h2 className="mt-2 font-serif text-3xl uppercase tracking-[0.04em]">
+              {STEP_TITLES[step - 1]}
+            </h2>
+            <div className="mt-6 h-px w-full bg-cyw-white/20">
+              <div
+                className="h-px bg-cyw-white transition-all duration-500"
+                style={{ width: `${(step / TOTAL) * 100}%` }}
+              />
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Contenido */}
-      <div className="min-w-0">
+      {/* Formulario */}
+      <div className="p-7 sm:p-12">
         {/* Progreso (móvil) */}
-        <div className="mb-10 lg:hidden">
+        <div className="mb-8 lg:hidden">
           <div className="flex items-end justify-between">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-cyw-black/40">
               Paso {step} de {TOTAL}
             </p>
-            <p className="font-serif text-lg text-cyw-white">
+            <p className="font-serif text-lg text-cyw-black">
               {STEP_TITLES[step - 1]}
             </p>
           </div>
-          <div className="mt-3 h-px w-full bg-cyw-white/10">
+          <div className="mt-3 h-px w-full bg-cyw-black/10">
             <div
-              className="h-px bg-cyw-white transition-all duration-500"
+              className="h-px bg-cyw-black transition-all duration-500"
               style={{ width: `${(step / TOTAL) * 100}%` }}
             />
           </div>
         </div>
 
-        {/* Título del paso (desktop) */}
-        <div className="mb-8 hidden lg:block">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
-            Paso {step} de {TOTAL}
-          </p>
-          <h1 className="mt-2 font-serif text-3xl text-cyw-white">
-            {STEP_TITLES[step - 1]}
-          </h1>
-        </div>
-
         {error && (
-          <div className="mb-6">
-            <Alert>{error}</Alert>
+          <div className="mb-6 rounded-md border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
           </div>
         )}
 
@@ -286,49 +291,53 @@ export function SolicitudWizard({
           >
             {step === 1 && (
               <div className="space-y-5">
-                <p className="text-sm text-cyw-white/50">
+                <p className="text-sm text-cyw-black/55">
                   Confirma tus datos de contacto.
                 </p>
-                <Field label="Nombre completo" htmlFor="nombre">
-                  <Input
+                <LField label="Nombre completo" htmlFor="nombre">
+                  <input
                     id="nombre"
+                    className={inputCls}
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
                   />
-                </Field>
-                <Field label="Teléfono" htmlFor="telefono">
-                  <Input
+                </LField>
+                <LField label="Teléfono" htmlFor="telefono">
+                  <input
                     id="telefono"
                     type="tel"
+                    className={inputCls}
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                   />
-                </Field>
+                </LField>
               </div>
             )}
 
             {step === 2 && (
               <div className="space-y-6">
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Marca" htmlFor="marca">
-                    <Input
+                  <LField label="Marca" htmlFor="marca">
+                    <input
                       id="marca"
+                      className={inputCls}
                       value={marca}
                       onChange={(e) => setMarca(e.target.value)}
                       placeholder="Rolex, Patek Philippe…"
                     />
-                  </Field>
-                  <Field label="Modelo" htmlFor="modelo">
-                    <Input
+                  </LField>
+                  <LField label="Modelo" htmlFor="modelo">
+                    <input
                       id="modelo"
+                      className={inputCls}
                       value={modelo}
                       onChange={(e) => setModelo(e.target.value)}
                     />
-                  </Field>
+                  </LField>
                 </div>
 
                 <div className="space-y-3">
-                  <span className="block text-[11px] uppercase tracking-[0.2em] text-cyw-white/50">
+                  <span className="block text-[11px] uppercase tracking-[0.2em] text-cyw-black/50">
                     Estado general
                   </span>
                   <div className="grid gap-3 sm:grid-cols-3">
@@ -337,16 +346,16 @@ export function SolicitudWizard({
                         key={c}
                         type="button"
                         onClick={() => setEstado(c)}
-                        className={`border p-4 text-left transition-colors ${
+                        className={`rounded-lg border p-4 text-left transition-colors ${
                           estado === c
-                            ? "border-cyw-white bg-cyw-white/10"
-                            : "border-cyw-white/15 hover:border-cyw-white/40"
+                            ? "border-cyw-black bg-cyw-black/[0.04]"
+                            : "border-cyw-black/15 hover:border-cyw-black/40"
                         }`}
                       >
-                        <span className="block text-sm uppercase tracking-[0.1em] text-cyw-white">
+                        <span className="block text-sm uppercase tracking-[0.1em] text-cyw-black">
                           {WATCH_CONDITION_LABELS[c]}
                         </span>
-                        <span className="mt-1.5 block text-[11px] leading-relaxed text-cyw-white/45">
+                        <span className="mt-1.5 block text-[11px] leading-relaxed text-cyw-black/50">
                           {CONDITION_DESC[c]}
                         </span>
                       </button>
@@ -355,31 +364,33 @@ export function SolicitudWizard({
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Valor estimado (MXN, opcional)" htmlFor="valor">
-                    <Input
+                  <LField label="Valor estimado (MXN, opcional)" htmlFor="valor">
+                    <input
                       id="valor"
                       type="number"
                       min="0"
+                      className={inputCls}
                       value={valor}
                       onChange={(e) => setValor(e.target.value)}
                     />
-                  </Field>
-                  <Field label="Monto deseado (MXN)" htmlFor="monto">
-                    <Input
+                  </LField>
+                  <LField label="Monto deseado (MXN)" htmlFor="monto">
+                    <input
                       id="monto"
                       type="number"
                       min="0"
+                      className={inputCls}
                       value={monto}
                       onChange={(e) => setMonto(e.target.value)}
                     />
-                  </Field>
+                  </LField>
                 </div>
               </div>
             )}
 
             {step === 3 && (
               <div className="space-y-4">
-                <p className="text-sm text-cyw-white/50">
+                <p className="text-sm text-cyw-black/55">
                   Sube fotografías claras. La frontal es obligatoria; el resto
                   agiliza la valuación. Se comprimen automáticamente.
                 </p>
@@ -399,7 +410,7 @@ export function SolicitudWizard({
 
             {step === 4 && (
               <div className="space-y-4">
-                <p className="text-sm text-cyw-white/50">
+                <p className="text-sm text-cyw-black/55">
                   Adjunta los documentos que tengas (opcional). Imágenes o PDF.
                 </p>
                 <div className="grid grid-cols-2 gap-3">
@@ -419,11 +430,11 @@ export function SolicitudWizard({
 
             {step === 5 && (
               <div className="space-y-7">
-                <p className="text-sm text-cyw-white/50">
+                <p className="text-sm text-cyw-black/55">
                   Revisa y envía tu solicitud.
                 </p>
 
-                <dl className="divide-y divide-cyw-white/10 border-y border-cyw-white/10 text-sm">
+                <dl className="divide-y divide-cyw-black/10 border-y border-cyw-black/10 text-sm">
                   <Resumen k="Nombre" v={nombre} />
                   <Resumen k="Teléfono" v={telefono} />
                   <Resumen k="Reloj" v={`${marca} ${modelo}`.trim()} />
@@ -436,7 +447,7 @@ export function SolicitudWizard({
 
                 {Object.keys(files).length > 0 && (
                   <div>
-                    <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-cyw-white/40">
+                    <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-cyw-black/40">
                       Archivos ({Object.keys(files).length})
                     </p>
                     <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
@@ -449,7 +460,7 @@ export function SolicitudWizard({
                   </div>
                 )}
 
-                <label className="flex items-start gap-3 text-xs leading-relaxed text-cyw-white/60">
+                <label className="flex items-start gap-3 text-xs leading-relaxed text-cyw-black/60">
                   <input
                     type="checkbox"
                     checked={acepta}
@@ -460,12 +471,12 @@ export function SolicitudWizard({
                     Acepto el{" "}
                     <Link
                       href="/aviso-de-privacidad"
-                      className="underline hover:text-cyw-white"
+                      className="underline hover:text-cyw-black"
                     >
                       aviso de privacidad
                     </Link>{" "}
                     y los{" "}
-                    <Link href="/terminos" className="underline hover:text-cyw-white">
+                    <Link href="/terminos" className="underline hover:text-cyw-black">
                       términos y condiciones
                     </Link>
                     .
@@ -477,29 +488,34 @@ export function SolicitudWizard({
         </AnimatePresence>
 
         {/* Navegación */}
-        <div className="mt-12 flex items-center justify-between border-t border-cyw-white/10 pt-6">
-          <Button
-            variant="ghost"
+        <div className="mt-10 flex items-center justify-between border-t border-cyw-black/10 pt-6">
+          <button
+            type="button"
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1 || submitting}
+            className="text-xs uppercase tracking-[0.2em] text-cyw-black/50 transition-colors hover:text-cyw-black disabled:pointer-events-none disabled:opacity-40"
           >
             Atrás
-          </Button>
+          </button>
 
           {step < TOTAL ? (
-            <Button
+            <button
+              type="button"
               onClick={() => setStep((s) => s + 1)}
               disabled={!puedeAvanzar()}
+              className="bg-cyw-black px-6 py-3 text-xs uppercase tracking-[0.2em] text-cyw-white transition-colors hover:bg-cyw-black/90 disabled:pointer-events-none disabled:opacity-40"
             >
               Siguiente
-            </Button>
+            </button>
           ) : (
-            <Button
+            <button
+              type="button"
               onClick={handleSubmit}
               disabled={!puedeAvanzar() || submitting}
+              className="bg-cyw-black px-6 py-3 text-xs uppercase tracking-[0.2em] text-cyw-white transition-colors hover:bg-cyw-black/90 disabled:pointer-events-none disabled:opacity-40"
             >
               {submitting ? "Enviando…" : "Enviar solicitud"}
-            </Button>
+            </button>
           )}
         </div>
       </div>
@@ -510,8 +526,8 @@ export function SolicitudWizard({
 function Resumen({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between gap-6 py-3">
-      <dt className="text-cyw-white/40">{k}</dt>
-      <dd className="text-right text-cyw-white/80">{v || "—"}</dd>
+      <dt className="text-cyw-black/45">{k}</dt>
+      <dd className="text-right text-cyw-black/80">{v || "—"}</dd>
     </div>
   );
 }

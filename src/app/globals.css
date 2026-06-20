@@ -63,8 +63,41 @@ html.lenis body {
   overflow: hidden;
 }
 
+/* === Anillo metálico giratorio (acento decorativo sutil) ================== */
+@keyframes cyw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.cyw-ring {
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0) 0deg,
+    rgba(255, 255, 255, 0.32) 60deg,
+    rgba(255, 255, 255, 0.03) 140deg,
+    rgba(255, 255, 255, 0.18) 230deg,
+    rgba(255, 255, 255, 0) 320deg,
+    rgba(255, 255, 255, 0) 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 1px),
+    #000 calc(100% - 1px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 1px),
+    #000 calc(100% - 1px)
+  );
+  animation: cyw-spin 32s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  .cyw-ring {
+    animation: none;
   }
 }
