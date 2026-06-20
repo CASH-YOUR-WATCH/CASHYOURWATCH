@@ -35,21 +35,23 @@ export function CursorTrail() {
 
     const spawn = (x: number, y: number, dx: number, dy: number) => {
       const speed = Math.hypot(dx, dy);
-      const count = Math.min(10, 2 + Math.floor(speed / 4));
+      // Muchas más partículas, en un espectro amplio.
+      const count = Math.min(36, 12 + Math.floor(speed / 2));
       for (let i = 0; i < count; i++) {
         const ang = Math.random() * Math.PI * 2;
-        const spd = (Math.random() * 0.7 + 0.1) * dpr;
+        const spread = (Math.random() * 28 + 4) * dpr; // dispersión amplia
+        const spd = (Math.random() * 0.3 + 0.03) * dpr; // movimiento lento
         ps.push({
-          x: x * dpr + (Math.random() - 0.5) * 8 * dpr,
-          y: y * dpr + (Math.random() - 0.5) * 8 * dpr,
-          vx: Math.cos(ang) * spd + dx * 0.05 * dpr,
-          vy: Math.sin(ang) * spd + dy * 0.05 * dpr,
+          x: x * dpr + Math.cos(ang) * spread,
+          y: y * dpr + Math.sin(ang) * spread,
+          vx: Math.cos(ang) * spd + dx * 0.022 * dpr,
+          vy: Math.sin(ang) * spd + dy * 0.022 * dpr,
           life: 1,
-          decay: 0.012 + Math.random() * 0.022,
+          decay: 0.005 + Math.random() * 0.01, // duran más
           r: (Math.random() * 1.7 + 0.6) * dpr,
         });
       }
-      if (ps.length > 600) ps.splice(0, ps.length - 600);
+      if (ps.length > 1300) ps.splice(0, ps.length - 1300);
     };
 
     const tick = () => {
@@ -58,9 +60,9 @@ export function CursorTrail() {
         const p = ps[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.025 * dpr; // leve gravedad (efecto agua)
-        p.vx *= 0.97;
-        p.vy *= 0.97;
+        p.vy += 0.008 * dpr; // gravedad muy leve (efecto agua)
+        p.vx *= 0.985;
+        p.vy *= 0.985;
         p.life -= p.decay;
         if (p.life <= 0) {
           ps.splice(i, 1);
