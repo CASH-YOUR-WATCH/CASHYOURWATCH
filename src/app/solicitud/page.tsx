@@ -21,7 +21,7 @@ export default async function SolicitudPage() {
     .single();
 
   return (
-    <div className="flex min-h-screen flex-col bg-cyw-cream text-cyw-black">
+    <div className="flex min-h-svh flex-col bg-cyw-cream text-cyw-black">
       <header className="flex items-center justify-between border-b border-cyw-black/10 px-6 py-5 sm:px-10">
         <Link href="/">
           <Logo tone="dark" className="origin-left scale-90" />

@@ -12,7 +12,7 @@ export default async function AdminLayout({
   await requireAdmin();
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
+    <div className="flex min-h-svh flex-col overflow-x-hidden">
       {/* Header desktop */}
       <header className="hidden items-center justify-between gap-4 border-b border-cyw-white/10 px-6 py-5 sm:px-10 lg:flex">
         <div className="flex items-center gap-4">

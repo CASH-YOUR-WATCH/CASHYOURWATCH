@@ -9,7 +9,7 @@ import { Particles } from "./particles";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen items-end overflow-hidden">
+    <section className="relative flex min-h-svh items-end overflow-hidden">
       {/* Foto de fondo (fachada/ciudad). */}
       <div aria-hidden className="absolute inset-0">
         <Image

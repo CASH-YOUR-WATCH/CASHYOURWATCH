@@ -30,12 +30,23 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem; /* compensa el header fijo */
+  -webkit-text-size-adjust: 100%; /* iOS no reescala el texto al rotar */
+}
+
+/* Evita el desbordamiento/rebote horizontal en iOS (Safari deja "salir" la
+   página de lado si algún elemento sobresale unos px). `clip` no crea un
+   contenedor de scroll, así que el scroll-padding y los anclas siguen bien. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  overscroll-behavior-y: none; /* reduce el rebote elástico vertical */
 }
 
 /* Fondo del hero: degradado oscuro monocromático (placeholder de la foto de

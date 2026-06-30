@@ -13,7 +13,7 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="flex min-h-svh flex-col">
       <header className="border-b border-cyw-white/10 px-6 py-5 sm:px-10">
         <Link href="/">
           <Logo className="origin-left scale-90" />
