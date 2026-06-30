@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/panel/status-badge";
 import { StatusTimeline } from "@/components/panel/status-timeline";
 import { StatusControl } from "@/components/admin/status-control";
 import { AddNote } from "@/components/admin/add-note";
+import { DueDiligenceControl } from "@/components/admin/due-diligence-control";
 import { formatDate, formatMoney } from "@/lib/format";
 import {
   WATCH_CONDITION_LABELS,
@@ -14,6 +15,7 @@ import {
   PHOTO_TYPES,
   type ApplicationStatus,
   type WatchCondition,
+  type DueDiligence,
   type FileType,
 } from "@/lib/applications";
 
@@ -31,7 +33,7 @@ export default async function AdminDetallePage({
   const { data: app } = await supabase
     .from("applications")
     .select(
-      "id, folio, marca, modelo, estado_reloj, valor_estimado, monto_deseado, status, created_at, user_id",
+      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, status, created_at, user_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -112,12 +114,21 @@ export default async function AdminDetallePage({
             <dl className="divide-y divide-cyw-white/10 border-y border-cyw-white/10 text-sm">
               <Dato k="Marca" v={app.marca} />
               <Dato k="Modelo" v={app.modelo} />
+              <Dato k="Referencia" v={app.numero_referencia || "—"} />
+              <Dato
+                k="Año"
+                v={app.anio_fabricacion ? String(app.anio_fabricacion) : "—"}
+              />
               <Dato
                 k="Estado"
                 v={WATCH_CONDITION_LABELS[app.estado_reloj as WatchCondition]}
               />
               <Dato k="Valor estimado" v={formatMoney(app.valor_estimado)} />
               <Dato k="Monto deseado" v={formatMoney(app.monto_deseado)} />
+              <Dato
+                k="Declaración de licitud"
+                v={app.declaracion_licitud ? "Aceptada ✓" : "No registrada"}
+              />
             </dl>
           </Bloque>
 
@@ -182,6 +193,16 @@ export default async function AdminDetallePage({
                 }
               />
             </div>
+          </Bloque>
+
+          <Bloque titulo="Debida diligencia — procedencia">
+            <DueDiligenceControl
+              applicationId={app.id}
+              current={app.due_diligence as DueDiligence}
+              marca={app.marca}
+              modelo={app.modelo}
+              referencia={app.numero_referencia}
+            />
           </Bloque>
 
           <Bloque titulo="Notas internas">

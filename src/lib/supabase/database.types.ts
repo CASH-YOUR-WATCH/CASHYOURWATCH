@@ -26,6 +26,8 @@ export type ApplicationStatus =
   | "formalizada"
   | "rechazada";
 
+export type DueDiligence = "pendiente" | "verificado" | "alerta";
+
 export type Database = {
   public: {
     Tables: {
@@ -60,9 +62,13 @@ export type Database = {
           user_id: string;
           marca: string;
           modelo: string;
+          numero_referencia: string | null;
+          anio_fabricacion: number | null;
           estado_reloj: string;
           valor_estimado: number | null;
           monto_deseado: number | null;
+          declaracion_licitud: boolean;
+          due_diligence: DueDiligence;
           status: ApplicationStatus;
           created_at: string;
           updated_at: string;
@@ -73,9 +79,13 @@ export type Database = {
           user_id: string;
           marca: string;
           modelo: string;
+          numero_referencia?: string | null;
+          anio_fabricacion?: number | null;
           estado_reloj: string;
           valor_estimado?: number | null;
           monto_deseado?: number | null;
+          declaracion_licitud?: boolean;
+          due_diligence?: DueDiligence;
           status?: ApplicationStatus;
           created_at?: string;
           updated_at?: string;
@@ -86,9 +96,13 @@ export type Database = {
           user_id?: string;
           marca?: string;
           modelo?: string;
+          numero_referencia?: string | null;
+          anio_fabricacion?: number | null;
           estado_reloj?: string;
           valor_estimado?: number | null;
           monto_deseado?: number | null;
+          declaracion_licitud?: boolean;
+          due_diligence?: DueDiligence;
           status?: ApplicationStatus;
           created_at?: string;
           updated_at?: string;

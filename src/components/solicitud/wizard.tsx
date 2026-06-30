@@ -84,9 +84,12 @@ export function SolicitudWizard({
   const [telefono, setTelefono] = useState(initialTelefono);
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
+  const [referencia, setReferencia] = useState("");
+  const [anio, setAnio] = useState("");
   const [estado, setEstado] = useState<WatchCondition | "">("");
   const [valor, setValor] = useState("");
   const [monto, setMonto] = useState("");
+  const [manifiesto, setManifiesto] = useState(false);
   const [files, setFiles] = useState<Partial<Record<FileType, File>>>({});
   const [acepta, setAcepta] = useState(false);
 
@@ -112,8 +115,10 @@ export function SolicitudWizard({
     if (step === 1) return nombre.trim() !== "" && telefono.trim() !== "";
     if (step === 2)
       return (
+        manifiesto &&
         marca.trim() !== "" &&
         modelo.trim() !== "" &&
+        referencia.trim() !== "" &&
         estado !== "" &&
         monto.trim() !== ""
       );
@@ -147,9 +152,12 @@ export function SolicitudWizard({
           user_id: user.id,
           marca: marca.trim(),
           modelo: modelo.trim(),
+          numero_referencia: referencia.trim() || null,
+          anio_fabricacion: anio ? Number(anio) : null,
           estado_reloj: estado as WatchCondition,
           valor_estimado: valor ? Number(valor) : null,
           monto_deseado: monto ? Number(monto) : null,
+          declaracion_licitud: manifiesto,
         })
         .select("id, folio")
         .single();
@@ -316,6 +324,37 @@ export function SolicitudWizard({
 
             {step === 2 && (
               <div className="space-y-6">
+                {/* Declaración de procedencia lícita (manifiesto) */}
+                <div className="rounded-lg border border-cyw-black/15 bg-cyw-black/[0.03] p-5">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-cyw-black/50">
+                    Declaración de procedencia lícita
+                  </p>
+                  <p className="mt-3 text-xs leading-relaxed text-cyw-black/60">
+                    Para proteger a todas las partes y la transparencia del
+                    proceso, manifiesto bajo protesta de decir verdad que soy el
+                    propietario legítimo del reloj —o cuento con autorización para
+                    disponer de él— y que su procedencia es lícita. Autorizo a
+                    Cash Your Watch a realizar las verificaciones de debida
+                    diligencia que considere necesarias, incluida la consulta en
+                    registros y listas internacionales de piezas reportadas como
+                    extraviadas o robadas. Entiendo que, de detectarse una
+                    incidencia, Cash Your Watch podrá suspender el trámite y,
+                    cuando la ley lo requiera, informar a las autoridades
+                    competentes.
+                  </p>
+                  <label className="mt-4 flex items-start gap-3 text-xs leading-relaxed text-cyw-black/70">
+                    <input
+                      type="checkbox"
+                      checked={manifiesto}
+                      onChange={(e) => setManifiesto(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      He leído y acepto la declaración de procedencia lícita.
+                    </span>
+                  </label>
+                </div>
+
                 <div className="grid gap-5 sm:grid-cols-2">
                   <LField label="Marca" htmlFor="marca">
                     <input
@@ -332,6 +371,34 @@ export function SolicitudWizard({
                       className={inputCls}
                       value={modelo}
                       onChange={(e) => setModelo(e.target.value)}
+                      placeholder="Submariner, Nautilus…"
+                    />
+                  </LField>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <LField label="Número de referencia" htmlFor="referencia">
+                    <input
+                      id="referencia"
+                      className={inputCls}
+                      value={referencia}
+                      onChange={(e) => setReferencia(e.target.value)}
+                      placeholder="Ej. 126610LN"
+                    />
+                    <span className="block text-[11px] leading-relaxed text-cyw-black/40">
+                      Suele venir en la tarjeta de garantía o grabado en la caja.
+                    </span>
+                  </LField>
+                  <LField label="Año de fabricación (opcional)" htmlFor="anio">
+                    <input
+                      id="anio"
+                      type="number"
+                      min="1900"
+                      max="2100"
+                      className={inputCls}
+                      value={anio}
+                      onChange={(e) => setAnio(e.target.value)}
+                      placeholder="Ej. 2019"
                     />
                   </LField>
                 </div>
@@ -438,6 +505,8 @@ export function SolicitudWizard({
                   <Resumen k="Nombre" v={nombre} />
                   <Resumen k="Teléfono" v={telefono} />
                   <Resumen k="Reloj" v={`${marca} ${modelo}`.trim()} />
+                  <Resumen k="Referencia" v={referencia} />
+                  <Resumen k="Año" v={anio} />
                   <Resumen
                     k="Estado"
                     v={estado ? WATCH_CONDITION_LABELS[estado] : "—"}

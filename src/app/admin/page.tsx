@@ -26,7 +26,7 @@ export default async function AdminListPage({
   let query = supabase
     .from("applications")
     .select(
-      "id, folio, marca, modelo, monto_deseado, status, created_at, user_id",
+      "id, folio, marca, modelo, monto_deseado, status, due_diligence, created_at, user_id",
     )
     .order("created_at", { ascending: false });
 
@@ -91,8 +91,14 @@ export default async function AdminListPage({
                   className="block border border-cyw-white/10 bg-cyw-white/[0.02] p-4 transition-colors active:border-cyw-white/30"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-serif text-base text-cyw-white">
+                    <span className="flex items-center gap-2 font-serif text-base text-cyw-white">
                       #{a.folio}
+                      {a.due_diligence === "alerta" && (
+                        <span
+                          title="Alerta de procedencia"
+                          className="h-1.5 w-1.5 rounded-full bg-red-400"
+                        />
+                      )}
                     </span>
                     <StatusBadge status={a.status as ApplicationStatus} />
                   </div>
@@ -130,9 +136,15 @@ export default async function AdminListPage({
                   <td className="py-4 pr-4">
                     <Link
                       href={`/admin/${a.id}`}
-                      className="font-serif text-base text-cyw-white hover:underline"
+                      className="inline-flex items-center gap-2 font-serif text-base text-cyw-white hover:underline"
                     >
                       #{a.folio}
+                      {a.due_diligence === "alerta" && (
+                        <span
+                          title="Alerta de procedencia"
+                          className="h-1.5 w-1.5 rounded-full bg-red-400"
+                        />
+                      )}
                     </Link>
                   </td>
                   <td className="py-4 pr-4 text-cyw-white/70">

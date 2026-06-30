@@ -6,7 +6,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyStatusChange } from "@/lib/email/notifications";
 import {
   APPLICATION_STATUSES,
+  DUE_DILIGENCE_VALUES,
   type ApplicationStatus,
+  type DueDiligence,
 } from "@/lib/applications";
 
 export type AdminActionState = { ok?: boolean; error?: string };
@@ -49,6 +51,33 @@ export async function updateStatus(
       }
     }
   }
+
+  void admin;
+  revalidatePath(`/admin/${applicationId}`);
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+// Registrar el resultado de la debida diligencia (verificación de procedencia).
+export async function updateDueDiligence(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const admin = await requireAdmin();
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const due = String(formData.get("dueDiligence") ?? "");
+
+  if (!applicationId) return { error: "Falta la solicitud." };
+  if (!DUE_DILIGENCE_VALUES.includes(due as DueDiligence))
+    return { error: "Valor inválido." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("applications")
+    .update({ due_diligence: due as DueDiligence })
+    .eq("id", applicationId);
+
+  if (error) return { error: "No se pudo guardar la verificación." };
 
   void admin;
   revalidatePath(`/admin/${applicationId}`);
