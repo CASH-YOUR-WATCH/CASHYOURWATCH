@@ -112,7 +112,19 @@ export const DOCUMENT_TYPES = [
   "doc_propiedad",
 ] as const;
 
-export const FILE_TYPES = [...PHOTO_TYPES, ...DOCUMENT_TYPES] as const;
+// Evidencia de accesorios (condicional a lo que el dueño declare tener).
+export const ACCESSORY_EVIDENCE_TYPES = [
+  "evidencia_caja",
+  "evidencia_papeles",
+  "evidencia_ajustadores",
+  "evidencia_full_set",
+] as const;
+
+export const FILE_TYPES = [
+  ...PHOTO_TYPES,
+  ...DOCUMENT_TYPES,
+  ...ACCESSORY_EVIDENCE_TYPES,
+] as const;
 export type FileType = (typeof FILE_TYPES)[number];
 
 export const FILE_TYPE_LABELS: Record<FileType, string> = {
@@ -125,4 +137,38 @@ export const FILE_TYPE_LABELS: Record<FileType, string> = {
   doc_certificado: "Certificado",
   doc_garantia: "Garantía",
   doc_propiedad: "Prueba de propiedad",
+  evidencia_caja: "Evidencia — caja",
+  evidencia_papeles: "Evidencia — papeles",
+  evidencia_ajustadores: "Evidencia — ajustadores",
+  evidencia_full_set: "Evidencia — full set",
 };
+
+// Accesorios que se preguntan (sí/no) con su evidencia condicional.
+export const ACCESSORIES = [
+  {
+    key: "tiene_caja",
+    pregunta: "¿Tienes la caja original?",
+    corto: "Caja",
+    evidencia: "evidencia_caja",
+  },
+  {
+    key: "tiene_papeles",
+    pregunta: "¿Tienes los papeles o certificado?",
+    corto: "Papeles",
+    evidencia: "evidencia_papeles",
+  },
+  {
+    key: "tiene_ajustadores",
+    pregunta: "¿Tienes el set de ajustadores o eslabones?",
+    corto: "Ajustadores",
+    evidencia: "evidencia_ajustadores",
+  },
+  {
+    key: "full_set",
+    pregunta: "¿Es un full set (todo completo)?",
+    corto: "Full set",
+    evidencia: "evidencia_full_set",
+  },
+] as const;
+
+export type AccessoryKey = (typeof ACCESSORIES)[number]["key"];

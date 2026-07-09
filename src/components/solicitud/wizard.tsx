@@ -13,16 +13,19 @@ import {
   WATCH_CONDITION_LABELS,
   PHOTO_TYPES,
   DOCUMENT_TYPES,
+  ACCESSORIES,
   FILE_TYPE_LABELS,
   type WatchCondition,
   type FileType,
+  type AccessoryKey,
 } from "@/lib/applications";
 import { FileField, Thumb } from "./file-field";
 
-const TOTAL = 5;
+const TOTAL = 6;
 const STEP_TITLES = [
   "Solicitante",
   "El reloj",
+  "Accesorios",
   "Fotografías",
   "Documentos",
   "Confirmación",
@@ -30,6 +33,7 @@ const STEP_TITLES = [
 const STEP_IMAGES = [
   "/images/cliente.png",
   "/images/quienes-somos.png",
+  "/images/caja-reloj.png",
   "/images/reloj-2.png",
   "/images/contrato.png",
   "/images/finanzas.png",
@@ -40,6 +44,7 @@ const CONDITION_DESC: Record<WatchCondition, string> = {
   bueno: "Uso ligero, bien conservado.",
   regular: "Marcas visibles de uso.",
 };
+
 
 const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const DOC_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
@@ -86,10 +91,18 @@ export function SolicitudWizard({
   const [modelo, setModelo] = useState("");
   const [referencia, setReferencia] = useState("");
   const [anio, setAnio] = useState("");
+  const [diametro, setDiametro] = useState("");
+  const [atributos, setAtributos] = useState("");
   const [estado, setEstado] = useState<WatchCondition | "">("");
   const [valor, setValor] = useState("");
   const [monto, setMonto] = useState("");
   const [manifiesto, setManifiesto] = useState(false);
+  const [accesorios, setAccesorios] = useState<Record<AccessoryKey, boolean>>({
+    tiene_caja: false,
+    tiene_papeles: false,
+    tiene_ajustadores: false,
+    full_set: false,
+  });
   const [files, setFiles] = useState<Partial<Record<FileType, File>>>({});
   const [acepta, setAcepta] = useState(false);
 
@@ -122,9 +135,10 @@ export function SolicitudWizard({
         estado !== "" &&
         monto.trim() !== ""
       );
-    if (step === 3) return Boolean(files.foto_frontal);
-    if (step === 4) return true;
-    if (step === 5) return acepta;
+    if (step === 3) return true; // accesorios: todo opcional
+    if (step === 4) return Boolean(files.foto_frontal);
+    if (step === 5) return true; // documentos: opcional
+    if (step === 6) return acepta;
     return false;
   }
 
@@ -154,10 +168,16 @@ export function SolicitudWizard({
           modelo: modelo.trim(),
           numero_referencia: referencia.trim() || null,
           anio_fabricacion: anio ? Number(anio) : null,
+          diametro_mm: diametro ? Number(diametro) : null,
+          atributos_extra: atributos.trim() || null,
           estado_reloj: estado as WatchCondition,
           valor_estimado: valor ? Number(valor) : null,
           monto_deseado: monto ? Number(monto) : null,
           declaracion_licitud: manifiesto,
+          tiene_caja: accesorios.tiene_caja,
+          tiene_papeles: accesorios.tiene_papeles,
+          tiene_ajustadores: accesorios.tiene_ajustadores,
+          full_set: accesorios.full_set,
         })
         .select("id, folio")
         .single();
@@ -401,6 +421,18 @@ export function SolicitudWizard({
                       placeholder="Ej. 2019"
                     />
                   </LField>
+                  <LField label="Diámetro de la caja (mm)" htmlFor="diametro">
+                    <input
+                      id="diametro"
+                      type="number"
+                      min="10"
+                      max="80"
+                      className={inputCls}
+                      value={diametro}
+                      onChange={(e) => setDiametro(e.target.value)}
+                      placeholder="Ej. 40"
+                    />
+                  </LField>
                 </div>
 
                 <div className="space-y-3">
@@ -430,6 +462,20 @@ export function SolicitudWizard({
                   </div>
                 </div>
 
+                <LField
+                  label="Otros atributos (opcional)"
+                  htmlFor="atributos"
+                >
+                  <textarea
+                    id="atributos"
+                    rows={3}
+                    className={`${inputCls} resize-none`}
+                    value={atributos}
+                    onChange={(e) => setAtributos(e.target.value)}
+                    placeholder="Material (oro, acero, platino), complicaciones, edición especial, o cualquier detalle que aumente su valor…"
+                  />
+                </LField>
+
                 <div className="grid gap-5 sm:grid-cols-2">
                   <LField label="Valor estimado (MXN, opcional)" htmlFor="valor">
                     <input
@@ -456,6 +502,68 @@ export function SolicitudWizard({
             )}
 
             {step === 3 && (
+              <div className="space-y-5">
+                <p className="text-sm text-cyw-black/55">
+                  Cuéntanos con qué cuentas. Si tienes alguno, súbenos una foto
+                  como evidencia — un set más completo suma valor a tu solicitud.
+                </p>
+                <div className="space-y-3">
+                  {ACCESSORIES.map((acc) => {
+                    const on = accesorios[acc.key];
+                    return (
+                      <div
+                        key={acc.key}
+                        className="rounded-lg border border-cyw-black/12 p-4"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="text-sm text-cyw-black/80">
+                            {acc.pregunta}
+                          </span>
+                          <div className="flex shrink-0 gap-2">
+                            {([
+                              ["Sí", true],
+                              ["No", false],
+                            ] as const).map(([lbl, val]) => (
+                              <button
+                                key={lbl}
+                                type="button"
+                                onClick={() => {
+                                  setAccesorios((p) => ({
+                                    ...p,
+                                    [acc.key]: val,
+                                  }));
+                                  if (!val) setFile(acc.evidencia, null);
+                                }}
+                                className={`rounded-md border px-4 py-1.5 text-xs uppercase tracking-[0.15em] transition-colors ${
+                                  on === val
+                                    ? "border-cyw-black bg-cyw-black text-cyw-white"
+                                    : "border-cyw-black/20 text-cyw-black/55 hover:border-cyw-black/45"
+                                }`}
+                              >
+                                {lbl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {on && (
+                          <div className="mt-4 max-w-[220px]">
+                            <FileField
+                              label={FILE_TYPE_LABELS[acc.evidencia]}
+                              hint="Foto (opcional)"
+                              file={files[acc.evidencia] ?? null}
+                              accept={IMAGE_ACCEPT}
+                              onChange={(f) => setFile(acc.evidencia, f)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {step === 4 && (
               <div className="space-y-4">
                 <p className="text-sm text-cyw-black/55">
                   Sube fotografías claras. La frontal es obligatoria; el resto
@@ -475,7 +583,7 @@ export function SolicitudWizard({
               </div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <div className="space-y-4">
                 <p className="text-sm text-cyw-black/55">
                   Adjunta los documentos que tengas (opcional). Imágenes o PDF.
@@ -495,7 +603,7 @@ export function SolicitudWizard({
               </div>
             )}
 
-            {step === 5 && (
+            {step === 6 && (
               <div className="space-y-7">
                 <p className="text-sm text-cyw-black/55">
                   Revisa y envía tu solicitud.
@@ -507,9 +615,18 @@ export function SolicitudWizard({
                   <Resumen k="Reloj" v={`${marca} ${modelo}`.trim()} />
                   <Resumen k="Referencia" v={referencia} />
                   <Resumen k="Año" v={anio} />
+                  <Resumen k="Diámetro" v={diametro ? `${diametro} mm` : ""} />
                   <Resumen
                     k="Estado"
                     v={estado ? WATCH_CONDITION_LABELS[estado] : "—"}
+                  />
+                  <Resumen
+                    k="Incluye"
+                    v={
+                      ACCESSORIES.filter((a) => accesorios[a.key])
+                        .map((a) => a.corto)
+                        .join(", ") || "—"
+                    }
                   />
                   <Resumen k="Monto deseado" v={monto ? `$${monto} MXN` : "—"} />
                 </dl>

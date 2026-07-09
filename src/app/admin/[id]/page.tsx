@@ -13,6 +13,8 @@ import {
   WATCH_CONDITION_LABELS,
   FILE_TYPE_LABELS,
   PHOTO_TYPES,
+  ACCESSORY_EVIDENCE_TYPES,
+  ACCESSORIES,
   type ApplicationStatus,
   type WatchCondition,
   type DueDiligence,
@@ -33,7 +35,7 @@ export default async function AdminDetallePage({
   const { data: app } = await supabase
     .from("applications")
     .select(
-      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, status, created_at, user_id",
+      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, diametro_mm, atributos_extra, tiene_caja, tiene_papeles, tiene_ajustadores, full_set, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, status, created_at, user_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -71,11 +73,15 @@ export default async function AdminDetallePage({
         tipo: f.tipo as FileType,
         url: data?.signedUrl ?? null,
         isPhoto: (PHOTO_TYPES as readonly string[]).includes(f.tipo),
+        isEvidence: (ACCESSORY_EVIDENCE_TYPES as readonly string[]).includes(
+          f.tipo,
+        ),
       };
     }),
   );
   const fotos = files.filter((f) => f.isPhoto && f.url);
-  const docs = files.filter((f) => !f.isPhoto && f.url);
+  const evidencias = files.filter((f) => f.isEvidence && f.url);
+  const docs = files.filter((f) => !f.isPhoto && !f.isEvidence && f.url);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -120,8 +126,20 @@ export default async function AdminDetallePage({
                 v={app.anio_fabricacion ? String(app.anio_fabricacion) : "—"}
               />
               <Dato
+                k="Diámetro"
+                v={app.diametro_mm ? `${app.diametro_mm} mm` : "—"}
+              />
+              <Dato
                 k="Estado"
                 v={WATCH_CONDITION_LABELS[app.estado_reloj as WatchCondition]}
+              />
+              <Dato
+                k="Incluye"
+                v={
+                  ACCESSORIES.filter((a) => app[a.key as keyof typeof app])
+                    .map((a) => a.corto)
+                    .join(" · ") || "—"
+                }
               />
               <Dato k="Valor estimado" v={formatMoney(app.valor_estimado)} />
               <Dato k="Monto deseado" v={formatMoney(app.monto_deseado)} />
@@ -130,6 +148,16 @@ export default async function AdminDetallePage({
                 v={app.declaracion_licitud ? "Aceptada ✓" : "No registrada"}
               />
             </dl>
+            {app.atributos_extra && (
+              <div className="mt-4 border-l border-cyw-white/15 pl-4">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-cyw-white/40">
+                  Otros atributos
+                </p>
+                <p className="mt-1.5 text-sm leading-relaxed text-cyw-white/70">
+                  {app.atributos_extra}
+                </p>
+              </div>
+            )}
           </Bloque>
 
           {fotos.length > 0 && (
@@ -149,6 +177,32 @@ export default async function AdminDetallePage({
                       alt={FILE_TYPE_LABELS[f.tipo]}
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                     />
+                  </a>
+                ))}
+              </div>
+            </Bloque>
+          )}
+
+          {evidencias.length > 0 && (
+            <Bloque titulo="Evidencia de accesorios">
+              <div className="grid grid-cols-3 gap-3">
+                {evidencias.map((f) => (
+                  <a
+                    key={f.tipo}
+                    href={f.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative aspect-square overflow-hidden border border-cyw-white/10"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={f.url!}
+                      alt={FILE_TYPE_LABELS[f.tipo]}
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                    <span className="absolute inset-x-0 bottom-0 bg-cyw-black/75 py-1 text-center text-[9px] uppercase tracking-wide text-cyw-white/80">
+                      {FILE_TYPE_LABELS[f.tipo].replace("Evidencia — ", "")}
+                    </span>
                   </a>
                 ))}
               </div>

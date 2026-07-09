@@ -64,6 +64,12 @@ export type Database = {
           modelo: string;
           numero_referencia: string | null;
           anio_fabricacion: number | null;
+          diametro_mm: number | null;
+          atributos_extra: string | null;
+          tiene_caja: boolean;
+          tiene_papeles: boolean;
+          tiene_ajustadores: boolean;
+          full_set: boolean;
           estado_reloj: string;
           valor_estimado: number | null;
           monto_deseado: number | null;
@@ -81,6 +87,12 @@ export type Database = {
           modelo: string;
           numero_referencia?: string | null;
           anio_fabricacion?: number | null;
+          diametro_mm?: number | null;
+          atributos_extra?: string | null;
+          tiene_caja?: boolean;
+          tiene_papeles?: boolean;
+          tiene_ajustadores?: boolean;
+          full_set?: boolean;
           estado_reloj: string;
           valor_estimado?: number | null;
           monto_deseado?: number | null;
@@ -98,6 +110,12 @@ export type Database = {
           modelo?: string;
           numero_referencia?: string | null;
           anio_fabricacion?: number | null;
+          diametro_mm?: number | null;
+          atributos_extra?: string | null;
+          tiene_caja?: boolean;
+          tiene_papeles?: boolean;
+          tiene_ajustadores?: boolean;
+          full_set?: boolean;
           estado_reloj?: string;
           valor_estimado?: number | null;
           monto_deseado?: number | null;
