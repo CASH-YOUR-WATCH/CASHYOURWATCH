@@ -9,8 +9,15 @@ import { StatusControl } from "@/components/admin/status-control";
 import { AddNote } from "@/components/admin/add-note";
 import { DueDiligenceControl } from "@/components/admin/due-diligence-control";
 import { ExistenceProofControl } from "@/components/admin/existence-proof-control";
+import { CounterofferControl } from "@/components/admin/counteroffer-control";
+import { LogisticsControl } from "@/components/admin/logistics-control";
 import { formatDate, formatMoney } from "@/lib/format";
 import { proofState, type ExistenceProof } from "@/lib/existence";
+import {
+  LOGISTICS_LABELS,
+  type ContraofertaStatus,
+  type LogisticsStage,
+} from "@/lib/logistics";
 import {
   WATCH_CONDITION_LABELS,
   FILE_TYPE_LABELS,
@@ -33,6 +40,16 @@ const PROOF_DOT: Record<string, string> = {
   enviada_tarde: "bg-amber-400",
 };
 
+const LOGI_DOT: Record<string, string> = {
+  guia_generada: "bg-cyw-white/50",
+  en_transito: "bg-sky-400",
+  recibido: "bg-sky-400",
+  inspeccion: "bg-amber-400",
+  aprobado: "bg-emerald-400",
+  rechazado: "bg-red-400",
+  devuelto: "bg-red-400",
+};
+
 export default async function AdminDetallePage({
   params,
 }: {
@@ -45,7 +62,7 @@ export default async function AdminDetallePage({
   const { data: app } = await supabase
     .from("applications")
     .select(
-      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, diametro_mm, atributos_extra, tiene_caja, tiene_papeles, tiene_ajustadores, full_set, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, status, created_at, user_id",
+      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, diametro_mm, atributos_extra, tiene_caja, tiene_papeles, tiene_ajustadores, full_set, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, monto_contraoferta, contraoferta_status, guia_paqueteria, guia_tracking, guia_storage_path, monto_asegurado, status, created_at, user_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -114,6 +131,26 @@ export default async function AdminDetallePage({
       return { ...p, estado: proofState(p, nowMs), url };
     }),
   );
+
+  // Bitácora del envío + guía.
+  const { data: eventRows } = await supabase
+    .from("logistics_events")
+    .select("etapa, nota, created_at")
+    .eq("application_id", id)
+    .order("created_at", { ascending: true });
+  const logistics = (eventRows ?? []) as {
+    etapa: string;
+    nota: string | null;
+    created_at: string;
+  }[];
+
+  let guiaUrl: string | null = null;
+  if (app.guia_storage_path) {
+    const { data } = await supabase.storage
+      .from("application-files")
+      .createSignedUrl(app.guia_storage_path, 600);
+    guiaUrl = data?.signedUrl ?? null;
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -339,6 +376,61 @@ export default async function AdminDetallePage({
                           className="h-full w-full object-cover"
                         />
                       </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Bloque>
+
+          <Bloque titulo="Contraoferta">
+            <CounterofferControl
+              applicationId={app.id}
+              status={app.contraoferta_status as ContraofertaStatus}
+              monto={app.monto_contraoferta}
+            />
+          </Bloque>
+
+          <Bloque titulo="Logística de envío">
+            <LogisticsControl
+              applicationId={app.id}
+              guiaPaqueteria={app.guia_paqueteria}
+              guiaTracking={app.guia_tracking}
+              montoAsegurado={app.monto_asegurado}
+              valorEstimado={app.valor_estimado}
+              hasGuia={Boolean(app.guia_paqueteria)}
+            />
+            {guiaUrl && (
+              <a
+                href={guiaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block text-sm text-cyw-white/70 underline-offset-4 hover:text-cyw-white hover:underline"
+              >
+                Ver guía cargada ↗
+              </a>
+            )}
+            {logistics.length > 0 && (
+              <ul className="mt-6 space-y-4">
+                {logistics.map((e, i) => (
+                  <li key={i} className="border-l border-cyw-white/15 pl-4">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          LOGI_DOT[e.etapa] ?? "bg-cyw-white/40"
+                        }`}
+                      />
+                      <span className="text-sm text-cyw-white/80">
+                        {LOGISTICS_LABELS[e.etapa as LogisticsStage] ?? e.etapa}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-cyw-white/40">
+                      {formatDate(e.created_at)}
+                    </p>
+                    {e.nota && (
+                      <p className="mt-1 text-xs leading-relaxed text-cyw-white/55">
+                        {e.nota}
+                      </p>
                     )}
                   </li>
                 ))}

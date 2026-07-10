@@ -28,6 +28,12 @@ export type ApplicationStatus =
 
 export type DueDiligence = "pendiente" | "verificado" | "alerta";
 
+export type ContraofertaStatus =
+  | "ninguna"
+  | "pendiente"
+  | "aceptada"
+  | "rechazada";
+
 export type Database = {
   public: {
     Tables: {
@@ -75,6 +81,14 @@ export type Database = {
           monto_deseado: number | null;
           declaracion_licitud: boolean;
           due_diligence: DueDiligence;
+          monto_contraoferta: number | null;
+          contraoferta_status: ContraofertaStatus;
+          contraoferta_at: string | null;
+          contraoferta_respondida_at: string | null;
+          guia_paqueteria: string | null;
+          guia_tracking: string | null;
+          guia_storage_path: string | null;
+          monto_asegurado: number | null;
           status: ApplicationStatus;
           created_at: string;
           updated_at: string;
@@ -98,6 +112,14 @@ export type Database = {
           monto_deseado?: number | null;
           declaracion_licitud?: boolean;
           due_diligence?: DueDiligence;
+          monto_contraoferta?: number | null;
+          contraoferta_status?: ContraofertaStatus;
+          contraoferta_at?: string | null;
+          contraoferta_respondida_at?: string | null;
+          guia_paqueteria?: string | null;
+          guia_tracking?: string | null;
+          guia_storage_path?: string | null;
+          monto_asegurado?: number | null;
           status?: ApplicationStatus;
           created_at?: string;
           updated_at?: string;
@@ -121,6 +143,14 @@ export type Database = {
           monto_deseado?: number | null;
           declaracion_licitud?: boolean;
           due_diligence?: DueDiligence;
+          monto_contraoferta?: number | null;
+          contraoferta_status?: ContraofertaStatus;
+          contraoferta_at?: string | null;
+          contraoferta_respondida_at?: string | null;
+          guia_paqueteria?: string | null;
+          guia_tracking?: string | null;
+          guia_storage_path?: string | null;
+          monto_asegurado?: number | null;
           status?: ApplicationStatus;
           created_at?: string;
           updated_at?: string;
@@ -264,6 +294,40 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "existence_proofs_application_id_fkey";
+            columns: ["application_id"];
+            referencedRelation: "applications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      logistics_events: {
+        Row: {
+          id: string;
+          application_id: string;
+          etapa: string;
+          nota: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          application_id: string;
+          etapa: string;
+          nota?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          application_id?: string;
+          etapa?: string;
+          nota?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "logistics_events_application_id_fkey";
             columns: ["application_id"];
             referencedRelation: "applications";
             referencedColumns: ["id"];
