@@ -227,6 +227,49 @@ export type Database = {
           },
         ];
       };
+      existence_proofs: {
+        Row: {
+          id: string;
+          application_id: string;
+          window_start: string;
+          window_end: string;
+          instrucciones: string | null;
+          storage_path: string | null;
+          responded_at: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          application_id: string;
+          window_start: string;
+          window_end: string;
+          instrucciones?: string | null;
+          storage_path?: string | null;
+          responded_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          application_id?: string;
+          window_start?: string;
+          window_end?: string;
+          instrucciones?: string | null;
+          storage_path?: string | null;
+          responded_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "existence_proofs_application_id_fkey";
+            columns: ["application_id"];
+            referencedRelation: "applications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       heartbeat: {
         Row: {
           id: number;

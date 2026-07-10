@@ -85,6 +85,41 @@ export async function updateDueDiligence(
   return { ok: true };
 }
 
+// Solicitar una prueba de existencia (el usuario deberá subir una foto del
+// reloj dentro de la ventana horaria indicada).
+export async function requestExistenceProof(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const admin = await requireAdmin();
+  const applicationId = String(formData.get("applicationId") ?? "");
+  const start = String(formData.get("windowStart") ?? "");
+  const end = String(formData.get("windowEnd") ?? "");
+  const instrucciones = String(formData.get("instrucciones") ?? "").trim();
+
+  if (!applicationId) return { error: "Falta la solicitud." };
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()))
+    return { error: "Indica la ventana horaria." };
+  if (endDate.getTime() <= startDate.getTime())
+    return { error: "La hora de fin debe ser posterior a la de inicio." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("existence_proofs").insert({
+    application_id: applicationId,
+    window_start: startDate.toISOString(),
+    window_end: endDate.toISOString(),
+    instrucciones: instrucciones || null,
+    created_by: admin.id,
+  });
+
+  if (error) return { error: "No se pudo crear la solicitud." };
+
+  revalidatePath(`/admin/${applicationId}`);
+  return { ok: true };
+}
+
 // Agregar una nota interna (no visible para el usuario).
 export async function addNote(
   _prev: AdminActionState,
