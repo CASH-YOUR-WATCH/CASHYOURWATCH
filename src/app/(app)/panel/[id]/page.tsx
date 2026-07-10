@@ -6,12 +6,14 @@ import { StatusBadge } from "@/components/panel/status-badge";
 import { StatusTimeline } from "@/components/panel/status-timeline";
 import { ExistenceProofSubmit } from "@/components/panel/existence-proof-submit";
 import { CounterofferResponse } from "@/components/panel/counteroffer-response";
+import { PackagingSubmit } from "@/components/panel/packaging-submit";
 import { formatDate, formatMoney } from "@/lib/format";
 import { proofState, type ExistenceProof } from "@/lib/existence";
 import {
   LOGISTICS_LABELS,
   LOGISTICS_DESC,
   COSTOS_AVISO,
+  EMPAQUE_AVISO,
   type ContraofertaStatus,
   type LogisticsStage,
 } from "@/lib/logistics";
@@ -19,6 +21,7 @@ import {
   WATCH_CONDITION_LABELS,
   FILE_TYPE_LABELS,
   PHOTO_TYPES,
+  PACKAGING_TYPES,
   type ApplicationStatus,
   type WatchCondition,
   type FileType,
@@ -88,11 +91,16 @@ export default async function SolicitudDetallePage({
         tipo: f.tipo as FileType,
         url: data?.signedUrl ?? null,
         isPhoto: (PHOTO_TYPES as readonly string[]).includes(f.tipo),
+        isPackaging: (PACKAGING_TYPES as readonly string[]).includes(f.tipo),
       };
     }),
   );
   const fotos = files.filter((f) => f.isPhoto && f.url);
-  const docs = files.filter((f) => !f.isPhoto && f.url);
+  const empaques = files.filter((f) => f.isPackaging && f.url);
+  const docs = files.filter((f) => !f.isPhoto && !f.isPackaging && f.url);
+  const empaquesSubidos = (fileRows ?? [])
+    .map((f) => f.tipo)
+    .filter((t) => (PACKAGING_TYPES as readonly string[]).includes(t));
 
   // Pruebas de existencia solicitadas por el equipo.
   const { data: proofRows } = await supabase
@@ -346,6 +354,24 @@ export default async function SolicitudDetallePage({
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {(contraoferta === "aceptada" ||
+            app.guia_paqueteria ||
+            empaques.length > 0) && (
+            <div className="mt-12">
+              <h2 className="mb-4 text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
+                Protocolo de empaque
+              </h2>
+              <p className="mb-5 text-xs leading-relaxed text-cyw-white/50">
+                {EMPAQUE_AVISO}
+              </p>
+              <PackagingSubmit
+                applicationId={app.id}
+                userId={user.id}
+                existing={empaquesSubidos}
+              />
             </div>
           )}
 

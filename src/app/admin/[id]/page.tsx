@@ -23,6 +23,7 @@ import {
   FILE_TYPE_LABELS,
   PHOTO_TYPES,
   ACCESSORY_EVIDENCE_TYPES,
+  PACKAGING_TYPES,
   ACCESSORIES,
   type ApplicationStatus,
   type WatchCondition,
@@ -103,12 +104,16 @@ export default async function AdminDetallePage({
         isEvidence: (ACCESSORY_EVIDENCE_TYPES as readonly string[]).includes(
           f.tipo,
         ),
+        isPackaging: (PACKAGING_TYPES as readonly string[]).includes(f.tipo),
       };
     }),
   );
   const fotos = files.filter((f) => f.isPhoto && f.url);
   const evidencias = files.filter((f) => f.isEvidence && f.url);
-  const docs = files.filter((f) => !f.isPhoto && !f.isEvidence && f.url);
+  const empaques = files.filter((f) => f.isPackaging && f.url);
+  const docs = files.filter(
+    (f) => !f.isPhoto && !f.isEvidence && !f.isPackaging && f.url,
+  );
 
   // Pruebas de existencia (solicitud + respuesta del usuario).
   const nowMs = Date.now();
@@ -271,6 +276,32 @@ export default async function AdminDetallePage({
                     />
                     <span className="absolute inset-x-0 bottom-0 bg-cyw-black/75 py-1 text-center text-[9px] uppercase tracking-wide text-cyw-white/80">
                       {FILE_TYPE_LABELS[f.tipo].replace("Evidencia — ", "")}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </Bloque>
+          )}
+
+          {empaques.length > 0 && (
+            <Bloque titulo="Evidencia de empaque">
+              <div className="grid grid-cols-3 gap-3">
+                {empaques.map((f) => (
+                  <a
+                    key={f.tipo}
+                    href={f.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative aspect-square overflow-hidden border border-cyw-white/10"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={f.url!}
+                      alt={FILE_TYPE_LABELS[f.tipo]}
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                    <span className="absolute inset-x-0 bottom-0 bg-cyw-black/75 py-1 text-center text-[9px] uppercase tracking-wide text-cyw-white/80">
+                      {FILE_TYPE_LABELS[f.tipo]}
                     </span>
                   </a>
                 ))}

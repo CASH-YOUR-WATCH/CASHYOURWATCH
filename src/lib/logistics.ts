@@ -66,3 +66,10 @@ export const COSTOS_AVISO =
   "Si tu reloj es aprobado, estos costos se descuentan del monto del préstamo. " +
   "Si la revisión física no coincide con lo mostrado en tu solicitud, el envío no procede " +
   "y el propietario cubre la guía anterior y una nueva guía de regreso para recibir su reloj.";
+
+/** Protocolo de empaque antifraude (aviso que ve el propietario). */
+export const EMPAQUE_AVISO =
+  "Para proteger a ambas partes, documenta el empaque de tu reloj con las fotos que se " +
+  "piden abajo. Al recibirlo, Cash Your Watch grabará en video la apertura del paquete " +
+  "para cotejar que la caja y el contenido son los mismos. Ese video no se sube aquí, pero " +
+  "podrá usarse como evidencia ante cualquier reclamación. Sube estas fotos antes de enviar.";

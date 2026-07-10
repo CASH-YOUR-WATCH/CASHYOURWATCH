@@ -120,10 +120,18 @@ export const ACCESSORY_EVIDENCE_TYPES = [
   "evidencia_full_set",
 ] as const;
 
+// Evidencia de empaque (antifraude, se sube antes de enviar el reloj).
+export const PACKAGING_TYPES = [
+  "empaque_reloj",
+  "empaque_contenido",
+  "empaque_sellado",
+] as const;
+
 export const FILE_TYPES = [
   ...PHOTO_TYPES,
   ...DOCUMENT_TYPES,
   ...ACCESSORY_EVIDENCE_TYPES,
+  ...PACKAGING_TYPES,
 ] as const;
 export type FileType = (typeof FILE_TYPES)[number];
 
@@ -141,7 +149,26 @@ export const FILE_TYPE_LABELS: Record<FileType, string> = {
   evidencia_papeles: "Evidencia — papeles",
   evidencia_ajustadores: "Evidencia — ajustadores",
   evidencia_full_set: "Evidencia — full set",
+  empaque_reloj: "Reloj antes de empacar",
+  empaque_contenido: "Contenido del paquete",
+  empaque_sellado: "Paquete sellado",
 };
+
+// Fotos que el propietario sube como protocolo de empaque, con su descripción.
+export const PACKAGING_ITEMS = [
+  {
+    tipo: "empaque_reloj",
+    hint: "El reloj y sus accesorios antes de guardarlos.",
+  },
+  {
+    tipo: "empaque_contenido",
+    hint: "Todo dentro de la caja, antes de cerrarla.",
+  },
+  {
+    tipo: "empaque_sellado",
+    hint: "El paquete ya cerrado y sellado, tal como irá a la paquetería.",
+  },
+] as const;
 
 // Accesorios que se preguntan (sí/no) con su evidencia condicional.
 export const ACCESSORIES = [
