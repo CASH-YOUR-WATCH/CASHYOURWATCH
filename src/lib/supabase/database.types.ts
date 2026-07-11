@@ -81,6 +81,7 @@ export type Database = {
           monto_deseado: number | null;
           declaracion_licitud: boolean;
           due_diligence: DueDiligence;
+          prueba_hora: string | null;
           monto_contraoferta: number | null;
           contraoferta_status: ContraofertaStatus;
           contraoferta_at: string | null;
@@ -112,6 +113,7 @@ export type Database = {
           monto_deseado?: number | null;
           declaracion_licitud?: boolean;
           due_diligence?: DueDiligence;
+          prueba_hora?: string | null;
           monto_contraoferta?: number | null;
           contraoferta_status?: ContraofertaStatus;
           contraoferta_at?: string | null;
@@ -143,6 +145,7 @@ export type Database = {
           monto_deseado?: number | null;
           declaracion_licitud?: boolean;
           due_diligence?: DueDiligence;
+          prueba_hora?: string | null;
           monto_contraoferta?: number | null;
           contraoferta_status?: ContraofertaStatus;
           contraoferta_at?: string | null;

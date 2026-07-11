@@ -51,6 +51,13 @@ const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
 const DOC_ACCEPT = "image/jpeg,image/png,image/webp,application/pdf";
 const MAX_FILE_MB = 10;
 
+/** Hora aleatoria (formato reloj H:MM) para la prueba de existencia. */
+function randomWatchTime(): string {
+  const h = 1 + Math.floor(Math.random() * 12); // 1–12
+  const m = Math.floor(Math.random() * 60); // 0–59
+  return `${h}:${String(m).padStart(2, "0")}`;
+}
+
 const inputCls =
   "w-full rounded-md border border-cyw-black/15 bg-white px-4 py-3 text-sm text-cyw-black placeholder:text-cyw-black/30 focus:border-cyw-black/50 focus:outline-none";
 
@@ -98,6 +105,7 @@ export function SolicitudWizard({
   const [valor, setValor] = useState("");
   const [monto, setMonto] = useState("");
   const [manifiesto, setManifiesto] = useState(false);
+  const [pruebaHora] = useState(randomWatchTime);
   const [fullSet, setFullSet] = useState<boolean | null>(null);
   const [accesorios, setAccesorios] = useState<
     Record<AccessoryItemKey, boolean>
@@ -178,6 +186,7 @@ export function SolicitudWizard({
           valor_estimado: valor ? Number(valor) : null,
           monto_deseado: monto ? Number(monto) : null,
           declaracion_licitud: manifiesto,
+          prueba_hora: pruebaHora,
           full_set: fullSet === true,
           tiene_caja: fullSet === true ? true : accesorios.tiene_caja,
           tiene_papeles: fullSet === true ? true : accesorios.tiene_papeles,
@@ -637,10 +646,15 @@ export function SolicitudWizard({
                     Prueba de existencia · obligatoria
                   </p>
                   <p className="mt-2 text-xs leading-relaxed text-cyw-black/60">
-                    Toma una foto del reloj junto a un papel con la{" "}
+                    Ajusta las manecillas de tu reloj para que marquen las{" "}
+                    <strong className="text-cyw-black">{pruebaHora}</strong> y
+                    tómale una foto junto a un papel con la{" "}
                     <strong>fecha de hoy</strong> y la palabra{" "}
                     <strong>“Cash Your Watch”</strong> escritas a mano. Con esto
                     confirmamos que tienes el reloj físicamente.
+                  </p>
+                  <p className="mt-2 rounded-md bg-cyw-black/[0.04] px-3 py-2 text-center font-serif text-2xl tracking-wide text-cyw-black">
+                    {pruebaHora}
                   </p>
                   <div className="mt-3 max-w-[220px]">
                     <FileField

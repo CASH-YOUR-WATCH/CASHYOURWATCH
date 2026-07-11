@@ -54,7 +54,7 @@ export default async function AdminDetallePage({
   const { data: app } = await supabase
     .from("applications")
     .select(
-      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, diametro_mm, atributos_extra, tiene_caja, tiene_papeles, tiene_ajustadores, full_set, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, monto_contraoferta, contraoferta_status, guia_paqueteria, guia_tracking, guia_storage_path, monto_asegurado, status, created_at, user_id",
+      "id, folio, marca, modelo, numero_referencia, anio_fabricacion, diametro_mm, atributos_extra, tiene_caja, tiene_papeles, tiene_ajustadores, full_set, estado_reloj, valor_estimado, monto_deseado, declaracion_licitud, due_diligence, prueba_hora, monto_contraoferta, contraoferta_status, guia_paqueteria, guia_tracking, guia_storage_path, monto_asegurado, status, created_at, user_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -205,6 +205,21 @@ export default async function AdminDetallePage({
             )}
           </Bloque>
 
+          {app.prueba_hora && (
+            <div className="border border-amber-400/25 bg-amber-400/[0.05] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/90">
+                Prueba de existencia
+              </p>
+              <p className="mt-1 text-sm text-cyw-white/70">
+                El reloj debe marcar las{" "}
+                <strong className="font-serif text-lg text-cyw-white">
+                  {app.prueba_hora}
+                </strong>{" "}
+                en la foto de prueba. Verifica que coincida.
+              </p>
+            </div>
+          )}
+
           {fotos.length > 0 && (
             <Bloque titulo="Fotografías">
               <div className="grid grid-cols-3 gap-3">
@@ -222,6 +237,9 @@ export default async function AdminDetallePage({
                       alt={FILE_TYPE_LABELS[f.tipo]}
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                     />
+                    <span className="absolute inset-x-0 bottom-0 bg-cyw-black/75 py-1 text-center text-[9px] uppercase tracking-wide text-cyw-white/80">
+                      {FILE_TYPE_LABELS[f.tipo]}
+                    </span>
                   </a>
                 ))}
               </div>
