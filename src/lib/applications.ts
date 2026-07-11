@@ -127,11 +127,15 @@ export const PACKAGING_TYPES = [
   "empaque_sellado",
 ] as const;
 
+// Foto de prueba de existencia (obligatoria en la solicitud).
+export const PROOF_TYPE = "prueba_existencia" as const;
+
 export const FILE_TYPES = [
   ...PHOTO_TYPES,
   ...DOCUMENT_TYPES,
   ...ACCESSORY_EVIDENCE_TYPES,
   ...PACKAGING_TYPES,
+  PROOF_TYPE,
 ] as const;
 export type FileType = (typeof FILE_TYPES)[number];
 
@@ -152,6 +156,7 @@ export const FILE_TYPE_LABELS: Record<FileType, string> = {
   empaque_reloj: "Reloj antes de empacar",
   empaque_contenido: "Contenido del paquete",
   empaque_sellado: "Paquete sellado",
+  prueba_existencia: "Prueba de existencia",
 };
 
 // Fotos que el propietario sube como protocolo de empaque, con su descripción.
@@ -170,8 +175,8 @@ export const PACKAGING_ITEMS = [
   },
 ] as const;
 
-// Accesorios que se preguntan (sí/no) con su evidencia condicional.
-export const ACCESSORIES = [
+// Accesorios individuales (se preguntan solo cuando NO es full set).
+export const ACCESSORY_ITEMS = [
   {
     key: "tiene_caja",
     pregunta: "¿Tienes la caja original?",
@@ -190,6 +195,13 @@ export const ACCESSORIES = [
     corto: "Ajustadores",
     evidencia: "evidencia_ajustadores",
   },
+] as const;
+
+export type AccessoryItemKey = (typeof ACCESSORY_ITEMS)[number]["key"];
+
+// Todos (incluye full set) — para el resumen "Incluye" del admin.
+export const ACCESSORIES = [
+  ...ACCESSORY_ITEMS,
   {
     key: "full_set",
     pregunta: "¿Es un full set (todo completo)?",

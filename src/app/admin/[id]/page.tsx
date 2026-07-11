@@ -8,11 +8,9 @@ import { StatusTimeline } from "@/components/panel/status-timeline";
 import { StatusControl } from "@/components/admin/status-control";
 import { AddNote } from "@/components/admin/add-note";
 import { DueDiligenceControl } from "@/components/admin/due-diligence-control";
-import { ExistenceProofControl } from "@/components/admin/existence-proof-control";
 import { CounterofferControl } from "@/components/admin/counteroffer-control";
 import { LogisticsControl } from "@/components/admin/logistics-control";
 import { formatDate, formatMoney } from "@/lib/format";
-import { proofState, type ExistenceProof } from "@/lib/existence";
 import {
   LOGISTICS_LABELS,
   type ContraofertaStatus,
@@ -22,6 +20,7 @@ import {
   WATCH_CONDITION_LABELS,
   FILE_TYPE_LABELS,
   PHOTO_TYPES,
+  PROOF_TYPE,
   ACCESSORY_EVIDENCE_TYPES,
   PACKAGING_TYPES,
   ACCESSORIES,
@@ -32,14 +31,6 @@ import {
 } from "@/lib/applications";
 
 export const metadata: Metadata = { title: "Admin — Detalle" };
-
-const PROOF_DOT: Record<string, string> = {
-  abierta: "bg-amber-400",
-  programada: "bg-cyw-white/40",
-  vencida: "bg-red-400",
-  enviada: "bg-emerald-400",
-  enviada_tarde: "bg-amber-400",
-};
 
 const LOGI_DOT: Record<string, string> = {
   guia_generada: "bg-cyw-white/50",
@@ -100,7 +91,9 @@ export default async function AdminDetallePage({
       return {
         tipo: f.tipo as FileType,
         url: data?.signedUrl ?? null,
-        isPhoto: (PHOTO_TYPES as readonly string[]).includes(f.tipo),
+        isPhoto:
+          (PHOTO_TYPES as readonly string[]).includes(f.tipo) ||
+          f.tipo === PROOF_TYPE,
         isEvidence: (ACCESSORY_EVIDENCE_TYPES as readonly string[]).includes(
           f.tipo,
         ),
@@ -113,28 +106,6 @@ export default async function AdminDetallePage({
   const empaques = files.filter((f) => f.isPackaging && f.url);
   const docs = files.filter(
     (f) => !f.isPhoto && !f.isEvidence && !f.isPackaging && f.url,
-  );
-
-  // Pruebas de existencia (solicitud + respuesta del usuario).
-  const nowMs = Date.now();
-  const { data: proofRows } = await supabase
-    .from("existence_proofs")
-    .select(
-      "id, window_start, window_end, instrucciones, storage_path, responded_at, created_at",
-    )
-    .eq("application_id", id)
-    .order("created_at", { ascending: false });
-  const proofs = await Promise.all(
-    ((proofRows ?? []) as ExistenceProof[]).map(async (p) => {
-      let url: string | null = null;
-      if (p.storage_path) {
-        const { data } = await supabase.storage
-          .from("application-files")
-          .createSignedUrl(p.storage_path, 600);
-        url = data?.signedUrl ?? null;
-      }
-      return { ...p, estado: proofState(p, nowMs), url };
-    }),
   );
 
   // Bitácora del envío + guía.
@@ -357,61 +328,6 @@ export default async function AdminDetallePage({
               modelo={app.modelo}
               referencia={app.numero_referencia}
             />
-          </Bloque>
-
-          <Bloque titulo="Prueba de existencia">
-            <ExistenceProofControl applicationId={app.id} />
-            {proofs.length > 0 && (
-              <ul className="mt-6 space-y-5">
-                {proofs.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex gap-4 border-l border-cyw-white/15 pl-4"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            PROOF_DOT[p.estado.key] ?? "bg-cyw-white/40"
-                          }`}
-                        />
-                        <span className="text-sm text-cyw-white/80">
-                          {p.estado.label}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-[11px] text-cyw-white/40">
-                        {formatDate(p.window_start)} — {formatDate(p.window_end)}
-                      </p>
-                      {p.responded_at && (
-                        <p className="mt-0.5 text-[11px] text-cyw-white/40">
-                          Respondió: {formatDate(p.responded_at)}
-                        </p>
-                      )}
-                      {p.instrucciones && (
-                        <p className="mt-1 text-xs leading-relaxed text-cyw-white/55">
-                          {p.instrucciones}
-                        </p>
-                      )}
-                    </div>
-                    {p.url && (
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="h-16 w-16 shrink-0 overflow-hidden border border-cyw-white/10"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={p.url}
-                          alt="Prueba de existencia"
-                          className="h-full w-full object-cover"
-                        />
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
           </Bloque>
 
           <Bloque titulo="Contraoferta">

@@ -13,11 +13,12 @@ import {
   WATCH_CONDITION_LABELS,
   PHOTO_TYPES,
   DOCUMENT_TYPES,
-  ACCESSORIES,
+  ACCESSORY_ITEMS,
+  PROOF_TYPE,
   FILE_TYPE_LABELS,
   type WatchCondition,
   type FileType,
-  type AccessoryKey,
+  type AccessoryItemKey,
 } from "@/lib/applications";
 import { FileField, Thumb } from "./file-field";
 
@@ -97,11 +98,13 @@ export function SolicitudWizard({
   const [valor, setValor] = useState("");
   const [monto, setMonto] = useState("");
   const [manifiesto, setManifiesto] = useState(false);
-  const [accesorios, setAccesorios] = useState<Record<AccessoryKey, boolean>>({
+  const [fullSet, setFullSet] = useState<boolean | null>(null);
+  const [accesorios, setAccesorios] = useState<
+    Record<AccessoryItemKey, boolean>
+  >({
     tiene_caja: false,
     tiene_papeles: false,
     tiene_ajustadores: false,
-    full_set: false,
   });
   const [files, setFiles] = useState<Partial<Record<FileType, File>>>({});
   const [acepta, setAcepta] = useState(false);
@@ -135,8 +138,9 @@ export function SolicitudWizard({
         estado !== "" &&
         monto.trim() !== ""
       );
-    if (step === 3) return true; // accesorios: todo opcional
-    if (step === 4) return Boolean(files.foto_frontal);
+    if (step === 3) return fullSet !== null; // debe responder si es full set
+    if (step === 4)
+      return Boolean(files.foto_frontal) && Boolean(files[PROOF_TYPE]);
     if (step === 5) return true; // documentos: opcional
     if (step === 6) return acepta;
     return false;
@@ -174,10 +178,11 @@ export function SolicitudWizard({
           valor_estimado: valor ? Number(valor) : null,
           monto_deseado: monto ? Number(monto) : null,
           declaracion_licitud: manifiesto,
-          tiene_caja: accesorios.tiene_caja,
-          tiene_papeles: accesorios.tiene_papeles,
-          tiene_ajustadores: accesorios.tiene_ajustadores,
-          full_set: accesorios.full_set,
+          full_set: fullSet === true,
+          tiene_caja: fullSet === true ? true : accesorios.tiene_caja,
+          tiene_papeles: fullSet === true ? true : accesorios.tiene_papeles,
+          tiene_ajustadores:
+            fullSet === true ? true : accesorios.tiene_ajustadores,
         })
         .select("id, folio")
         .single();
@@ -504,81 +509,166 @@ export function SolicitudWizard({
             {step === 3 && (
               <div className="space-y-5">
                 <p className="text-sm text-cyw-black/55">
-                  Cuéntanos con qué cuentas. Si tienes alguno, súbenos una foto
-                  como evidencia — un set más completo suma valor a tu solicitud.
+                  Un set más completo suma valor a tu solicitud.
                 </p>
-                <div className="space-y-3">
-                  {ACCESSORIES.map((acc) => {
-                    const on = accesorios[acc.key];
-                    return (
-                      <div
-                        key={acc.key}
-                        className="rounded-lg border border-cyw-black/12 p-4"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-sm text-cyw-black/80">
-                            {acc.pregunta}
-                          </span>
-                          <div className="flex shrink-0 gap-2">
-                            {([
-                              ["Sí", true],
-                              ["No", false],
-                            ] as const).map(([lbl, val]) => (
-                              <button
-                                key={lbl}
-                                type="button"
-                                onClick={() => {
-                                  setAccesorios((p) => ({
-                                    ...p,
-                                    [acc.key]: val,
-                                  }));
-                                  if (!val) setFile(acc.evidencia, null);
-                                }}
-                                className={`rounded-md border px-4 py-1.5 text-xs uppercase tracking-[0.15em] transition-colors ${
-                                  on === val
-                                    ? "border-cyw-black bg-cyw-black text-cyw-white"
-                                    : "border-cyw-black/20 text-cyw-black/55 hover:border-cyw-black/45"
-                                }`}
-                              >
-                                {lbl}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        {on && (
-                          <div className="mt-4 max-w-[220px]">
-                            <FileField
-                              label={FILE_TYPE_LABELS[acc.evidencia]}
-                              hint="Foto (opcional)"
-                              file={files[acc.evidencia] ?? null}
-                              accept={IMAGE_ACCEPT}
-                              onChange={(f) => setFile(acc.evidencia, f)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+
+                {/* Pregunta gatillo: ¿full set? */}
+                <div className="rounded-lg border border-cyw-black/15 bg-cyw-black/[0.02] p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-cyw-black/80">
+                      ¿Tu reloj es <strong>full set</strong>? (viene completo,
+                      con todo como se compró originalmente)
+                    </span>
+                    <div className="flex shrink-0 gap-2">
+                      {([
+                        ["Sí", true],
+                        ["No", false],
+                      ] as const).map(([lbl, val]) => (
+                        <button
+                          key={lbl}
+                          type="button"
+                          onClick={() => setFullSet(val)}
+                          className={`rounded-md border px-4 py-1.5 text-xs uppercase tracking-[0.15em] transition-colors ${
+                            fullSet === val
+                              ? "border-cyw-black bg-cyw-black text-cyw-white"
+                              : "border-cyw-black/20 text-cyw-black/55 hover:border-cyw-black/45"
+                          }`}
+                        >
+                          {lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Full set = sí → foto de cada elemento */}
+                {fullSet === true && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-cyw-black/55">
+                      Perfecto. Sube una foto de cada elemento para respaldar el
+                      set completo (recomendado):
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {ACCESSORY_ITEMS.map((acc) => (
+                        <FileField
+                          key={acc.key}
+                          label={FILE_TYPE_LABELS[acc.evidencia]}
+                          hint="Foto (opcional)"
+                          file={files[acc.evidencia] ?? null}
+                          accept={IMAGE_ACCEPT}
+                          onChange={(f) => setFile(acc.evidencia, f)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Full set = no → preguntas individuales */}
+                {fullSet === false && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-cyw-black/55">
+                      Indícanos qué incluye tu reloj:
+                    </p>
+                    {ACCESSORY_ITEMS.map((acc) => {
+                      const on = accesorios[acc.key];
+                      return (
+                        <div
+                          key={acc.key}
+                          className="rounded-lg border border-cyw-black/12 p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-sm text-cyw-black/80">
+                              {acc.pregunta}
+                            </span>
+                            <div className="flex shrink-0 gap-2">
+                              {([
+                                ["Sí", true],
+                                ["No", false],
+                              ] as const).map(([lbl, val]) => (
+                                <button
+                                  key={lbl}
+                                  type="button"
+                                  onClick={() => {
+                                    setAccesorios((p) => ({
+                                      ...p,
+                                      [acc.key]: val,
+                                    }));
+                                    if (!val) setFile(acc.evidencia, null);
+                                  }}
+                                  className={`rounded-md border px-4 py-1.5 text-xs uppercase tracking-[0.15em] transition-colors ${
+                                    on === val
+                                      ? "border-cyw-black bg-cyw-black text-cyw-white"
+                                      : "border-cyw-black/20 text-cyw-black/55 hover:border-cyw-black/45"
+                                  }`}
+                                >
+                                  {lbl}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {on && (
+                            <div className="mt-4 max-w-[220px]">
+                              <FileField
+                                label={FILE_TYPE_LABELS[acc.evidencia]}
+                                hint="Foto (opcional)"
+                                file={files[acc.evidencia] ?? null}
+                                accept={IMAGE_ACCEPT}
+                                onChange={(f) => setFile(acc.evidencia, f)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
             {step === 4 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <p className="text-sm text-cyw-black/55">
-                  Sube fotografías claras. La frontal es obligatoria; el resto
-                  agiliza la valuación. Se comprimen automáticamente.
+                  Sube fotografías claras. Se comprimen automáticamente.
                 </p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {PHOTO_TYPES.map((t) => (
+
+                {/* Prueba de existencia (obligatoria) */}
+                <div className="rounded-lg border border-cyw-black/15 bg-cyw-black/[0.02] p-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-cyw-black/50">
+                    Prueba de existencia · obligatoria
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-cyw-black/60">
+                    Toma una foto del reloj junto a un papel con la{" "}
+                    <strong>fecha de hoy</strong> y la palabra{" "}
+                    <strong>“Cash Your Watch”</strong> escritas a mano. Con esto
+                    confirmamos que tienes el reloj físicamente.
+                  </p>
+                  <div className="mt-3 max-w-[220px]">
                     <FileField
-                      key={t}
-                      label={FILE_TYPE_LABELS[t]}
-                      file={files[t] ?? null}
+                      label={FILE_TYPE_LABELS[PROOF_TYPE]}
+                      hint="Obligatoria"
+                      file={files[PROOF_TYPE] ?? null}
                       accept={IMAGE_ACCEPT}
-                      onChange={(f) => setFile(t, f)}
+                      onChange={(f) => setFile(PROOF_TYPE, f)}
                     />
-                  ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-3 text-sm text-cyw-black/55">
+                    Fotos del reloj (la <strong>frontal</strong> es obligatoria;
+                    el resto agiliza la valuación).
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {PHOTO_TYPES.map((t) => (
+                      <FileField
+                        key={t}
+                        label={FILE_TYPE_LABELS[t]}
+                        file={files[t] ?? null}
+                        accept={IMAGE_ACCEPT}
+                        onChange={(f) => setFile(t, f)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -623,9 +713,13 @@ export function SolicitudWizard({
                   <Resumen
                     k="Incluye"
                     v={
-                      ACCESSORIES.filter((a) => accesorios[a.key])
-                        .map((a) => a.corto)
-                        .join(", ") || "—"
+                      fullSet === true
+                        ? "Full set"
+                        : fullSet === false
+                          ? ACCESSORY_ITEMS.filter((a) => accesorios[a.key])
+                              .map((a) => a.corto)
+                              .join(", ") || "—"
+                          : "—"
                     }
                   />
                   <Resumen k="Monto deseado" v={monto ? `$${monto} MXN` : "—"} />

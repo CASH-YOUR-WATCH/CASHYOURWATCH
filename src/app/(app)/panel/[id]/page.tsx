@@ -4,11 +4,9 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/panel/status-badge";
 import { StatusTimeline } from "@/components/panel/status-timeline";
-import { ExistenceProofSubmit } from "@/components/panel/existence-proof-submit";
 import { CounterofferResponse } from "@/components/panel/counteroffer-response";
 import { PackagingSubmit } from "@/components/panel/packaging-submit";
 import { formatDate, formatMoney } from "@/lib/format";
-import { proofState, type ExistenceProof } from "@/lib/existence";
 import {
   LOGISTICS_LABELS,
   LOGISTICS_DESC,
@@ -21,6 +19,7 @@ import {
   WATCH_CONDITION_LABELS,
   FILE_TYPE_LABELS,
   PHOTO_TYPES,
+  PROOF_TYPE,
   PACKAGING_TYPES,
   type ApplicationStatus,
   type WatchCondition,
@@ -28,14 +27,6 @@ import {
 } from "@/lib/applications";
 
 export const metadata: Metadata = { title: "Detalle de solicitud" };
-
-const PROOF_DOT: Record<string, string> = {
-  abierta: "bg-amber-400",
-  programada: "bg-cyw-white/40",
-  vencida: "bg-red-400",
-  enviada: "bg-emerald-400",
-  enviada_tarde: "bg-amber-400",
-};
 
 const LOGI_DOT: Record<string, string> = {
   guia_generada: "bg-cyw-white/50",
@@ -90,7 +81,9 @@ export default async function SolicitudDetallePage({
       return {
         tipo: f.tipo as FileType,
         url: data?.signedUrl ?? null,
-        isPhoto: (PHOTO_TYPES as readonly string[]).includes(f.tipo),
+        isPhoto:
+          (PHOTO_TYPES as readonly string[]).includes(f.tipo) ||
+          f.tipo === PROOF_TYPE,
         isPackaging: (PACKAGING_TYPES as readonly string[]).includes(f.tipo),
       };
     }),
@@ -101,30 +94,6 @@ export default async function SolicitudDetallePage({
   const empaquesSubidos = (fileRows ?? [])
     .map((f) => f.tipo)
     .filter((t) => (PACKAGING_TYPES as readonly string[]).includes(t));
-
-  // Pruebas de existencia solicitadas por el equipo.
-  const { data: proofRows } = await supabase
-    .from("existence_proofs")
-    .select(
-      "id, window_start, window_end, instrucciones, storage_path, responded_at, created_at",
-    )
-    .eq("application_id", id)
-    .order("created_at", { ascending: false });
-
-  const now = Date.now();
-  const proofs = await Promise.all(
-    ((proofRows ?? []) as ExistenceProof[]).map(async (p) => {
-      let url: string | null = null;
-      if (p.storage_path) {
-        const { data } = await supabase.storage
-          .from("application-files")
-          .createSignedUrl(p.storage_path, 600);
-        url = data?.signedUrl ?? null;
-      }
-      return { ...p, estado: proofState(p, now), url };
-    }),
-  );
-  const proofAbierta = proofs.find((p) => p.estado.puedeResponder);
 
   // Logística de envío.
   const { data: eventRows } = await supabase
@@ -168,32 +137,6 @@ export default async function SolicitudDetallePage({
         </div>
         <StatusBadge status={app.status as ApplicationStatus} />
       </div>
-
-      {proofAbierta && (
-        <div className="mt-8 border border-amber-400/30 bg-amber-400/[0.06] p-5 sm:p-6">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-amber-300/90">
-            Acción requerida — prueba de existencia
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-cyw-white/80">
-            Para continuar con tu evaluación necesitamos que subas una foto de tu
-            reloj <strong className="text-cyw-white">ahora</strong>.
-            {proofAbierta.instrucciones
-              ? ` ${proofAbierta.instrucciones}`
-              : ""}
-          </p>
-          <p className="mt-1.5 text-xs text-cyw-white/45">
-            Ventana para responder: {formatDate(proofAbierta.window_start)} —{" "}
-            {formatDate(proofAbierta.window_end)}
-          </p>
-          <div className="mt-4">
-            <ExistenceProofSubmit
-              proofId={proofAbierta.id}
-              applicationId={app.id}
-              userId={user.id}
-            />
-          </div>
-        </div>
-      )}
 
       {contraoferta !== "ninguna" && (
         <div className="mt-8 border border-cyw-white/15 bg-cyw-white/[0.02] p-5 sm:p-6">
@@ -309,53 +252,6 @@ export default async function SolicitudDetallePage({
               }[]
             }
           />
-
-          {proofs.length > 0 && (
-            <div className="mt-12">
-              <h2 className="mb-6 text-[11px] uppercase tracking-[0.3em] text-cyw-white/40">
-                Pruebas de existencia
-              </h2>
-              <ul className="space-y-5">
-                {proofs.map((p) => (
-                  <li key={p.id} className="border-l border-cyw-white/15 pl-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          PROOF_DOT[p.estado.key] ?? "bg-cyw-white/40"
-                        }`}
-                      />
-                      <span className="text-sm text-cyw-white/80">
-                        {p.estado.label}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[11px] text-cyw-white/40">
-                      {formatDate(p.window_start)} — {formatDate(p.window_end)}
-                    </p>
-                    {p.instrucciones && (
-                      <p className="mt-1 text-xs leading-relaxed text-cyw-white/55">
-                        {p.instrucciones}
-                      </p>
-                    )}
-                    {p.url && (
-                      <a
-                        href={p.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-block h-16 w-16 overflow-hidden border border-cyw-white/10"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={p.url}
-                          alt="Prueba de existencia"
-                          className="h-full w-full object-cover"
-                        />
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {(contraoferta === "aceptada" ||
             app.guia_paqueteria ||
