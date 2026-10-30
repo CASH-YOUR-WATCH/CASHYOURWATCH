@@ -1,0 +1,121 @@
+# El Vigi · agente de seguridad: revisa cada PR y hace una auditoría semanal (viernes) del repo.
+# Usa el Claude Agent SDK (cubierto por los créditos de API del plan) y solo puede LEER el repo;
+# el reporte lo publica este workflow.
+# Secret requerido: ANTHROPIC_API_KEY (sin él, el workflow se salta sin fallar).
+# Acciones y paquetes van fijados a versiones exactas.
+
+name: El Vigi
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 14 * * 5' # viernes 8:00 a. m. hora de CDMX
+  workflow_dispatch:
+
+concurrency:
+  group: agente-seguridad-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  SDK_VERSION: 0.3.310
+  MODELO: claude-sonnet-5-5
+
+jobs:
+  agente:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Solo reporta: aunque algo falle, nunca marca el PR en rojo ni bloquea nada.
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Verificar llave
+        id: llave
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::notice::Sin ANTHROPIC_API_KEY; se omite El Vigi."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # En un repo público los comentarios, issues y logs los ve cualquiera:
+          # publicar ahí un reporte de vulnerabilidades sería regalárselo a un atacante.
+          if [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq .visibility)" = "public" ]; then
+            echo "::notice::Repo público; El Vigi no publica reportes aquí. Hazlo privado para activarlo."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Valida llave y modelo sin costo (solo consulta el catálogo de modelos).
+          code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://api.anthropic.com/v1/models/$MODELO" \
+            -H "x-api-key: $KEY" -H "anthropic-version: 2023-06-01")
+          if [ "$code" != "200" ]; then
+            echo "::error::La API respondió $code: $(jq -r '.error.message // .' /tmp/r.json)"
+            exit 1
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.llave.outputs.ok == 'true'
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Instalar Agent SDK
+        if: steps.llave.outputs.ok == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/agente"
+          npm install --prefix "$RUNNER_TEMP/agente" --no-save --ignore-scripts --no-audit --no-fund \
+            "@anthropic-ai/claude-agent-sdk@$SDK_VERSION"
+          cp .github/agente-seguridad/agente.mjs "$RUNNER_TEMP/agente/"
+
+      - name: Preparar cambios a revisar
+        if: steps.llave.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$PR" ]; then
+            gh pr diff "$PR" -R "$GITHUB_REPOSITORY" > "$RUNNER_TEMP/cambios.diff"
+          else
+            git log --since="7 days ago" -p --no-color | head -c 400000 > "$RUNNER_TEMP/cambios.diff"
+          fi
+          echo "Tamaño de los cambios: $(wc -c < "$RUNNER_TEMP/cambios.diff") bytes"
+
+      - name: Ejecutar agente
+        if: steps.llave.outputs.ok == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MODO: ${{ github.event_name == 'pull_request' && 'pr' || 'semanal' }}
+        run: node "$RUNNER_TEMP/agente/agente.mjs" "$MODO" "$RUNNER_TEMP/cambios.diff" "$RUNNER_TEMP/reporte.md"
+
+      - name: Publicar en el PR
+        if: steps.llave.outputs.ok == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          marca='<!-- agente-seguridad -->'
+          { echo "$marca"; echo "### 🛡️ El Vigi"; echo; cat "$RUNNER_TEMP/reporte.md"; } > "$RUNNER_TEMP/comentario.md"
+          # Un solo comentario por PR: se actualiza en cada revisión.
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"$marca\")) | .id" | tail -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/comentario.md" > /dev/null
+          else
+            gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/comentario.md"
+          fi
+
+      - name: Publicar reporte semanal
+        if: steps.llave.outputs.ok == 'true' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create -R "$GITHUB_REPOSITORY" \
+            --title "El Vigi · reporte semanal · $(TZ=America/Mexico_City date +%Y-%m-%d)" \
+            --body-file "$RUNNER_TEMP/reporte.md"
