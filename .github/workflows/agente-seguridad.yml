@@ -20,6 +20,7 @@ concurrency:
 env:
   SDK_VERSION: 0.3.310
   MODELO: claude-sonnet-5-5
+  PANEL_URL: https://vigi.2-25-107-148.sslip.io
 
 jobs:
   agente:
@@ -32,6 +33,7 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      id-token: write # solo para identificarse ante el panel de El Vigi
     steps:
       - name: Verificar llave
         id: llave
@@ -46,10 +48,12 @@ jobs:
           fi
           # En un repo público los comentarios, issues y logs los ve cualquiera:
           # publicar ahí un reporte de vulnerabilidades sería regalárselo a un atacante.
+          # En ese caso el reporte solo va al panel privado.
           if [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq .visibility)" = "public" ]; then
-            echo "::notice::Repo público; El Vigi no publica reportes aquí. Hazlo privado para activarlo."
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "::notice::Repo público; el reporte solo se envía al panel privado de El Vigi."
+            echo "publicar=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publicar=true" >> "$GITHUB_OUTPUT"
           fi
           # Valida llave y modelo sin costo (solo consulta el catálogo de modelos).
           code=$(curl -s -o /tmp/r.json -w '%{http_code}' "https://api.anthropic.com/v1/models/$MODELO" \
@@ -94,8 +98,23 @@ jobs:
           MODO: ${{ github.event_name == 'pull_request' && 'pr' || 'semanal' }}
         run: node "$RUNNER_TEMP/agente/agente.mjs" "$MODO" "$RUNNER_TEMP/cambios.diff" "$RUNNER_TEMP/reporte.md"
 
+      # El panel verifica con GitHub de qué repo viene el reporte (token OIDC); no hace falta otra llave.
+      - name: Enviar al panel
+        if: steps.llave.outputs.ok == 'true'
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          token=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=el-vigi" | jq -r .value)
+          echo "::add-mask::$token"
+          jq -n --rawfile md "$RUNNER_TEMP/reporte.md" --slurpfile h "$RUNNER_TEMP/reporte.md.json" \
+            --arg pr "$PR" --arg url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            '{pr: $pr, url: $url, markdown: $md, hallazgos: $h[0]}' |
+            curl -sS --fail-with-body -X POST "$PANEL_URL/api/reportes" \
+              -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data-binary @-
+
       - name: Publicar en el PR
-        if: steps.llave.outputs.ok == 'true' && github.event_name == 'pull_request'
+        if: steps.llave.outputs.ok == 'true' && steps.llave.outputs.publicar == 'true' && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -112,7 +131,7 @@ jobs:
           fi
 
       - name: Publicar reporte semanal
-        if: steps.llave.outputs.ok == 'true' && github.event_name != 'pull_request'
+        if: steps.llave.outputs.ok == 'true' && steps.llave.outputs.publicar == 'true' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
