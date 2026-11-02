@@ -21,6 +21,8 @@ env:
   SDK_VERSION: 0.3.310
   MODELO: claude-sonnet-5-5
   PANEL_URL: https://vigi.2-25-107-148.sslip.io
+  # Se conecta directo a la IP del servidor: el reporte no depende del DNS de un tercero.
+  PANEL_IP: 2.25.107.148
 
 jobs:
   agente:
@@ -101,6 +103,8 @@ jobs:
       # El panel verifica con GitHub de qué repo viene el reporte (token OIDC); no hace falta otra llave.
       - name: Enviar al panel
         if: steps.llave.outputs.ok == 'true'
+        # Si el panel no responde, el reporte igual se publica en GitHub.
+        continue-on-error: true
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
@@ -110,7 +114,7 @@ jobs:
           jq -n --rawfile md "$RUNNER_TEMP/reporte.md" --slurpfile h "$RUNNER_TEMP/reporte.md.json" \
             --arg pr "$PR" --arg url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             '{pr: $pr, url: $url, markdown: $md, hallazgos: $h[0]}' |
-            curl -sS --fail-with-body -X POST "$PANEL_URL/api/reportes" \
+            curl -sS --fail-with-body -X POST "$PANEL_URL/api/reportes" --resolve "${PANEL_URL#https://}:443:$PANEL_IP" \
               -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data-binary @-
 
       - name: Publicar en el PR
